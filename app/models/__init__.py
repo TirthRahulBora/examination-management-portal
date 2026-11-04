@@ -19,3 +19,5 @@ __all__ = [
 ]
 
 # Examination and Rubric exported
+
+# Slot and Booking models exported
