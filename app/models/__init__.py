@@ -17,7 +17,3 @@ __all__ = [
     'Evaluation',
     'EvaluationDetail'
 ]
-
-# Examination and Rubric exported
-
-# Slot and Booking models exported
