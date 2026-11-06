@@ -173,3 +173,5 @@ def logout():
 # Secure user logout and session teardown
 
 # Student self-registration and department binding
+
+# Examiner signup workflow with pending admin gate
