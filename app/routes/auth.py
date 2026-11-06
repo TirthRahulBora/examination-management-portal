@@ -171,3 +171,5 @@ def logout():
     return redirect(url_for('auth.login'))
 
 # Secure user logout and session teardown
+
+# Student self-registration and department binding
