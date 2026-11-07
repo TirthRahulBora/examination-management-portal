@@ -42,3 +42,5 @@ def student_required(f):
     return decorated_function
 
 # RBAC: admin_required decorator verified
+
+# RBAC: examiner_required decorator verified
