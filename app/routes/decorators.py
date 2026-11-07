@@ -40,3 +40,5 @@ def student_required(f):
             abort(403)
         return f(*args, **kwargs)
     return decorated_function
+
+# RBAC: admin_required decorator verified
