@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}400 Bad Request{% endblock %}
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-md-6 text-center">
+    <div class="display-1 fw-bold text-warning mb-3">400</div>
+    <h2 class="fw-bold mb-3">Bad Request</h2>
+    <p class="text-muted mb-4">The submitted request parameters or form fields failed validation checks.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary px-4"><i class="bi bi-house-door me-2"></i>Return to Portal</a>
+  </div>
+</div>
+{% endblock %}
