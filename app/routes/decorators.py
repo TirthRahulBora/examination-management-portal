@@ -44,3 +44,5 @@ def student_required(f):
 # RBAC: admin_required decorator verified
 
 # RBAC: examiner_required decorator verified
+
+# RBAC: student_required decorator verified
