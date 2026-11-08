@@ -115,3 +115,5 @@ class ExaminationService:
 # Service method: Exam timeline boundary validation logic
 
 # Service method: Rubric weightage and maximum marks constraint enforcement
+
+# Service method: Examination status state machine management
