@@ -113,3 +113,5 @@ class ExaminationService:
 # Service method: Course creation and retrieval logic verified
 
 # Service method: Exam timeline boundary validation logic
+
+# Service method: Rubric weightage and maximum marks constraint enforcement
