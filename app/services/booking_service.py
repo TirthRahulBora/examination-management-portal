@@ -216,3 +216,5 @@ class BookingService:
 # Atomic seat reservation and concurrency protection
 
 # Booking cancellation with slot seat restoration
+
+# Atomic slot rescheduling service workflow
