@@ -212,3 +212,5 @@ class BookingService:
         return slot
 
 # Slot creation and examiner schedule overlap prevention
+
+# Atomic seat reservation and concurrency protection
