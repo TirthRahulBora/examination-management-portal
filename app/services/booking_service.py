@@ -210,3 +210,5 @@ class BookingService:
         slot.examiner_id = new_examiner.id
         db.session.commit()
         return slot
+
+# Slot creation and examiner schedule overlap prevention
