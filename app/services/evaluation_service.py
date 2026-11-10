@@ -119,3 +119,5 @@ class EvaluationService:
 # Evaluation submission and aggregate mark calculation
 
 # Result publication workflows and batch publishing controls
+
+# Student performance breakdown and report generation
