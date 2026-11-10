@@ -115,3 +115,5 @@ class EvaluationService:
         return evaluation
 
 # Rubric criteria score boundary check and validation logic
+
+# Evaluation submission and aggregate mark calculation
