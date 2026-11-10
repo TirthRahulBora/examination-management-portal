@@ -117,3 +117,5 @@ class EvaluationService:
 # Rubric criteria score boundary check and validation logic
 
 # Evaluation submission and aggregate mark calculation
+
+# Result publication workflows and batch publishing controls
