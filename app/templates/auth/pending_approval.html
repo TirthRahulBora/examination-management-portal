@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Application Pending Approval{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+  <div class="col-md-6 text-center">
+    <div class="d-inline-flex align-items-center justify-content-center bg-warning bg-opacity-10 text-warning rounded-circle mb-4" style="width: 80px; height: 80px;">
+      <i class="bi bi-hourglass-split display-5 text-warning"></i>
+    </div>
+    <h3 class="fw-bold mb-2">Examiner Registration Pending Approval</h3>
+    <p class="text-muted mb-4 lead fs-6">
+      Thank you for registering as an examiner. Your application has been logged and is awaiting administrator verification. Once an administrator approves your profile, you will be able to log in, author slots, and conduct rubric evaluations.
+    </p>
+
+    <div class="card bg-light border-0 p-3 mx-auto mb-4" style="max-width: 450px;">
+      <div class="small text-muted text-start">
+        <i class="bi bi-info-circle me-1 text-primary"></i> <strong>For Demonstration Reviewers:</strong><br>
+        Log in as the administrator (<code>admin@emp.edu</code> / <code>AdminPassword@123</code>) and navigate to the <strong>Examiners</strong> section to review and approve pending applications with a single click.
+      </div>
+    </div>
+
+    <a href="{{ url_for('auth.login') }}" class="btn btn-primary px-4">
+      <i class="bi bi-arrow-left me-1"></i> Return to Login
+    </a>
+  </div>
+</div>
+{% endblock %}
