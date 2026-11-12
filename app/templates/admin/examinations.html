@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Examinations{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <h1 class="page-title">Examination Management</h1>
+    <div class="page-subtitle">Configure examination schedules, types, rubrics, and examiner assignments</div>
+  </div>
+  <a href="{{ url_for('admin.new_examination') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-circle me-1"></i> New Examination
+  </a>
+</div>
+
+<!-- Filters -->
+<div class="card card-academic mb-4">
+  <div class="card-body p-3">
+    <form method="GET" action="{{ url_for('admin.examinations') }}" class="row g-2 align-items-center">
+      <div class="col-md-4">
+        <div class="input-group">
+          <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" class="form-control border-start-0" name="q" value="{{ q }}" placeholder="Search by examination title or ID...">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" name="course_id">
+          <option value="">All Courses</option>
+          {% for c in courses %}
+            <option value="{{ c.id }}" {% if course_id == c.id %}selected{% endif %}>{{ c.course_code }} - {{ c.course_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select class="form-select" name="type">
+          <option value="">All Types</option>
+          <option value="Viva" {% if exam_type == 'Viva' %}selected{% endif %}>Viva</option>
+          <option value="Practical" {% if exam_type == 'Practical' %}selected{% endif %}>Practical</option>
+          <option value="Project Demo" {% if exam_type == 'Project Demo' %}selected{% endif %}>Project Demo</option>
+          <option value="Assessment" {% if exam_type == 'Assessment' %}selected{% endif %}>Assessment</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <select class="form-select" name="status">
+          <option value="">All Statuses</option>
+          <option value="Draft" {% if status == 'Draft' %}selected{% endif %}>Draft</option>
+          <option value="Slot Creation" {% if status == 'Slot Creation' %}selected{% endif %}>Slot Creation</option>
+          <option value="Booking Open" {% if status == 'Booking Open' %}selected{% endif %}>Booking Open</option>
+          <option value="Closed" {% if status == 'Closed' %}selected{% endif %}>Closed</option>
+          <option value="Completed" {% if status == 'Completed' %}selected{% endif %}>Completed</option>
+        </select>
+      </div>
+      <div class="col-md-1 d-flex gap-1">
+        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-funnel"></i></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Examinations Table -->
+<div class="card card-academic">
+  <div class="table-responsive">
+    <table class="table table-custom mb-0">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Examination</th>
+          <th>Course</th>
+          <th>Type & Duration</th>
+          <th>Slot Creation Window</th>
+          <th>Booking Window</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exam in examinations %}
+        <tr>
+          <td class="fw-semibold text-muted">#{{ exam.id }}</td>
+          <td>
+            <a href="{{ url_for('admin.view_examination', exam_id=exam.id) }}" class="fw-bold text-dark text-decoration-none">
+              {{ exam.examination_name }}
+            </a>
+            <div class="small text-muted">
+              Max Marks: <strong>{{ exam.maximum_marks }}</strong> &bull; Rubrics: <strong>{{ exam.rubrics | length }}</strong>
+            </div>
+          </td>
+          <td>
+            <span class="badge bg-light text-primary border fw-semibold">{{ exam.course.course_code }}</span>
+          </td>
+          <td>
+            <div>{{ exam.examination_type }}</div>
+            <div class="small text-muted">{{ exam.duration }} mins</div>
+          </td>
+          <td class="small">
+            <div>{{ exam.slot_creation_start | format_dt }}</div>
+            <div class="text-muted">to {{ exam.slot_creation_end | format_dt }}</div>
+          </td>
+          <td class="small">
+            <div>{{ exam.slot_booking_start | format_dt }}</div>
+            <div class="text-muted">to {{ exam.slot_booking_end | format_dt }}</div>
+          </td>
+          <td>
+            <span class="badge-status {% if exam.status == 'Booking Open' %}badge-booking-open{% elif exam.status == 'Slot Creation' %}badge-slot-creation{% elif exam.status == 'Completed' %}badge-completed{% elif exam.status == 'Closed' %}badge-closed{% else %}badge-draft{% endif %}">
+              {{ exam.status }}
+            </span>
+          </td>
+          <td class="text-end">
+            <div class="btn-group btn-group-sm">
+              <a href="{{ url_for('admin.view_examination', exam_id=exam.id) }}" class="btn btn-outline-primary" title="View & Manage">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{{ url_for('admin.edit_examination', exam_id=exam.id) }}" class="btn btn-outline-secondary" title="Edit Parameters">
+                <i class="bi bi-pencil"></i>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" class="empty-state">
+            <i class="bi bi-card-checklist empty-state-icon"></i>
+            <div>No examinations match the criteria.</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
