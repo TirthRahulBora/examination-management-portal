@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Submitted Evaluations{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <h1 class="page-title">Completed Evaluations Roster</h1>
+    <div class="page-subtitle">Track your graded candidates, scores, and publication status</div>
+  </div>
+</div>
+
+<div class="card card-academic">
+  <div class="table-responsive">
+    <table class="table table-custom mb-0">
+      <thead>
+        <tr>
+          <th>Evaluation ID</th>
+          <th>Student</th>
+          <th>Examination</th>
+          <th>Total Score</th>
+          <th>Evaluation Date</th>
+          <th>Status</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ev in evaluations %}
+        <tr>
+          <td class="text-muted fw-bold">#{{ ev.id }}</td>
+          <td>
+            <div class="fw-semibold">{{ ev.booking.student.full_name }}</div>
+            <div class="small text-muted">{{ ev.booking.student.email }}</div>
+          </td>
+          <td>
+            <div class="fw-semibold">{{ ev.booking.examination.examination_name }}</div>
+            <span class="badge bg-light text-primary border small">{{ ev.booking.examination.course.course_code }}</span>
+          </td>
+          <td>
+            <div class="fw-bold fs-6 text-primary">{{ ev.total_marks }} / {{ ev.booking.examination.maximum_marks }}</div>
+          </td>
+          <td class="small">{{ ev.evaluation_date | format_dt }}</td>
+          <td>
+            <span class="badge-status {% if ev.is_published %}badge-published{% else %}badge-draft{% endif %}">
+              {{ ev.publication_status }}
+            </span>
+          </td>
+          <td class="text-end">
+            <a href="{{ url_for('examiner.evaluate_student', booking_id=ev.booking_id) }}" class="btn btn-outline-secondary btn-sm">
+              <i class="bi bi-pencil me-1"></i> Review
+            </a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="empty-state">
+            <i class="bi bi-clipboard-check empty-state-icon"></i>
+            <div>No candidate evaluations completed yet.</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
