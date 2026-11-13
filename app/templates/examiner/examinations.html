@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Assigned Examinations{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <h1 class="page-title">Assigned Examinations</h1>
+    <div class="page-subtitle">Examinations you are authorized to conduct, author slots for, and grade</div>
+  </div>
+</div>
+
+<div class="row g-4">
+  {% for exam in examinations %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card card-academic h-100">
+      <div class="card-body p-4 d-flex flex-column">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="badge bg-light text-primary border fw-bold">{{ exam.course.course_code }}</span>
+          <span class="badge-status {% if exam.status == 'Booking Open' %}badge-booking-open{% elif exam.status == 'Slot Creation' %}badge-slot-creation{% elif exam.status == 'Completed' %}badge-completed{% else %}badge-draft{% endif %}">
+            {{ exam.status }}
+          </span>
+        </div>
+
+        <h5 class="fw-bold mb-1">{{ exam.examination_name }}</h5>
+        <div class="text-muted small mb-3">{{ exam.course.course_name }}</div>
+
+        <div class="bg-light rounded p-2 small mb-3">
+          <div class="d-flex justify-content-between py-1 border-bottom">
+            <span class="text-muted">Type:</span>
+            <strong>{{ exam.examination_type }}</strong>
+          </div>
+          <div class="d-flex justify-content-between py-1 border-bottom">
+            <span class="text-muted">Duration:</span>
+            <strong>{{ exam.duration }} mins</strong>
+          </div>
+          <div class="d-flex justify-content-between py-1 border-bottom">
+            <span class="text-muted">Max Marks:</span>
+            <strong>{{ exam.maximum_marks }} pts</strong>
+          </div>
+          <div class="d-flex justify-content-between py-1">
+            <span class="text-muted">Rubric Criteria:</span>
+            <strong>{{ exam.rubrics | length }} items</strong>
+          </div>
+        </div>
+
+        <div class="mb-3 small">
+          <div class="fw-semibold text-dark mb-1"><i class="bi bi-clock-history me-1 text-primary"></i> Slot Creation Window:</div>
+          <div class="text-muted">{{ exam.slot_creation_start | format_dt }}<br>to {{ exam.slot_creation_end | format_dt }}</div>
+        </div>
+
+        <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+          <span class="small text-muted">
+            My Slots: <strong>{{ exam.slots.filter_by(examiner_id=current_user.id).count() }}</strong>
+          </span>
+          {% if exam.is_in_slot_creation_period(now) %}
+            <a href="{{ url_for('examiner.new_slot', exam_id=exam.id) }}" class="btn btn-primary btn-sm">
+              <i class="bi bi-calendar-plus me-1"></i> Add Slot
+            </a>
+          {% else %}
+            <button class="btn btn-secondary btn-sm" disabled title="Slot creation window not open">
+              Window Closed
+            </button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="empty-state card card-academic p-5">
+      <i class="bi bi-award empty-state-icon"></i>
+      <h5 class="fw-bold">No Examinations Assigned</h5>
+      <p class="text-muted">An administrator has not assigned your profile to any examination modules yet.</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
