@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Evaluate Candidate — {{ booking.student.full_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="page-header mb-4">
+      <div class="d-flex align-items-center gap-2 mb-1">
+        <a href="{{ url_for('examiner.slot_students', slot_id=booking.slot_id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <h1 class="page-title mb-0">Rubric Evaluation Form</h1>
+      </div>
+      <div class="page-subtitle">Standardized Criterion-Based Assessment</div>
+    </div>
+
+    <!-- Candidate & Exam Summary Card -->
+    <div class="card card-academic mb-4">
+      <div class="card-body p-4">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <span class="text-muted small">Candidate Name:</span>
+            <div class="fw-bold fs-5">{{ booking.student.full_name }}</div>
+            <div class="small text-muted">{{ booking.student.email }} &bull; {{ booking.student.department or 'Department' }}</div>
+          </div>
+          <div class="col-sm-6">
+            <span class="text-muted small">Examination:</span>
+            <div class="fw-bold fs-5">{{ exam.examination_name }}</div>
+            <div class="small text-muted">{{ exam.course.course_code }} &bull; Max Marks: <strong>{{ exam.maximum_marks }}</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Evaluation Form -->
+    <div class="card card-academic mb-4">
+      <div class="card-header-academic d-flex justify-content-between align-items-center">
+        <span class="fw-bold"><i class="bi bi-ui-checks text-primary me-2"></i>Scoring Criteria ({{ exam.rubrics | length }} Rubrics)</span>
+        <span class="badge bg-light text-primary border">Total Weight: 100%</span>
+      </div>
+      <div class="card-body p-4">
+        <form method="POST" id="evalForm">
+          {% for r in exam.rubrics %}
+          <div class="mb-4 pb-3 border-bottom">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <label for="rubric_{{ r.id }}" class="fw-bold text-dark mb-0">{{ loop.index }}. {{ r.criterion_name }}</label>
+                {% if r.description %}
+                  <div class="small text-muted">{{ r.description }}</div>
+                {% endif %}
+              </div>
+              <div class="text-end">
+                <span class="badge bg-light text-secondary border">Max: {{ r.maximum_marks }} pts</span>
+              </div>
+            </div>
+
+            <div class="input-group" style="max-width: 250px;">
+              <input type="number" step="0.5" min="0" max="{{ r.maximum_marks }}" class="form-control rubric-input" id="rubric_{{ r.id }}" name="rubric_{{ r.id }}"
+                value="{{ existing_scores.get(r.id, '') }}" placeholder="0.0 – {{ r.maximum_marks }}" required>
+              <span class="input-group-text bg-light text-muted">/ {{ r.maximum_marks }}</span>
+            </div>
+          </div>
+          {% endfor %}
+
+          <div class="mb-4">
+            <label for="remarks" class="form-label small fw-semibold">Examiner Feedback & Qualitative Remarks</label>
+            <textarea class="form-control" id="remarks" name="remarks" rows="4" placeholder="Provide constructive feedback on technical strengths, conceptual depth, areas for improvement...">{{ evaluation.remarks if evaluation else '' }}</textarea>
+            <div class="form-text">Remarks are visible to the student upon publication of results.</div>
+          </div>
+
+          <div class="alert alert-light border d-flex justify-content-between align-items-center p-3 mb-4">
+            <div>
+              <div class="fw-bold text-dark">Total Marks Calculated:</div>
+              <div class="small text-muted">Must not exceed exam maximum ({{ exam.maximum_marks }})</div>
+            </div>
+            <div class="display-6 fw-bold text-primary" id="runningTotal">0.0</div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <a href="{{ url_for('examiner.slot_students', slot_id=booking.slot_id) }}" class="btn btn-outline-secondary">Cancel</a>
+            <div class="d-flex gap-2">
+              <button type="submit" name="action" value="draft" class="btn btn-outline-primary px-3">
+                <i class="bi bi-save me-1"></i> Save as Draft
+              </button>
+              <button type="submit" name="action" value="publish" class="btn btn-success px-4" onclick="return confirm('Publish evaluation results? This will finalize scores and make them visible to the student.');">
+                <i class="bi bi-check2-circle me-1"></i> Finalize & Publish
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function updateTotal() {
+    let sum = 0;
+    document.querySelectorAll('.rubric-input').forEach(input => {
+      const val = parseFloat(input.value) || 0;
+      sum += val;
+    });
+    document.getElementById('runningTotal').textContent = sum.toFixed(1);
+  }
+  document.querySelectorAll('.rubric-input').forEach(input => {
+    input.addEventListener('input', updateTotal);
+  });
+  updateTotal();
+</script>
+{% endblock %}

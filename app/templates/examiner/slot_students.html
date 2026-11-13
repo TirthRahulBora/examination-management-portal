@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Booked Students — Slot #{{ slot.id }}{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <a href="{{ url_for('examiner.slots') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+      <h1 class="page-title mb-0">Candidate Roster — Slot #{{ slot.id }}</h1>
+    </div>
+    <div class="page-subtitle">
+      {{ slot.examination.examination_name }} &bull; {{ slot.examination_date | format_date }} ({{ slot.start_time | format_time }} – {{ slot.end_time | format_time }})
+    </div>
+  </div>
+  <div>
+    <span class="badge {% if slot.available_seats > 0 %}bg-success{% else %}bg-secondary{% endif %} rounded-pill px-3 py-2">
+      {{ slot.available_seats }} / {{ slot.maximum_capacity }} seats available
+    </span>
+  </div>
+</div>
+
+<div class="card card-academic">
+  <div class="table-responsive">
+    <table class="table table-custom mb-0">
+      <thead>
+        <tr>
+          <th>Booking ID</th>
+          <th>Student Name</th>
+          <th>Institutional Email</th>
+          <th>Department</th>
+          <th>Contact Number</th>
+          <th>Booking Status</th>
+          <th>Evaluation Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td class="text-muted fw-bold">#{{ b.id }}</td>
+          <td class="fw-semibold">{{ b.student.full_name }}</td>
+          <td>{{ b.student.email }}</td>
+          <td>{{ b.student.department or '—' }}</td>
+          <td>{{ b.student.contact_number or '—' }}</td>
+          <td>
+            <span class="badge-status {% if b.status == 'Booked' %}badge-booking-open{% elif b.status == 'Completed' %}badge-completed{% else %}badge-cancelled{% endif %}">
+              {{ b.status }}
+            </span>
+          </td>
+          <td>
+            {% if b.evaluation %}
+              <div class="fw-bold text-dark">{{ b.evaluation.total_marks }} / {{ b.examination.maximum_marks }}</div>
+              <span class="badge-status {% if b.evaluation.is_published %}badge-published{% else %}badge-draft{% endif %}">
+                {{ b.evaluation.publication_status }}
+              </span>
+            {% else %}
+              <span class="badge bg-light text-warning border">Pending Grading</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            {% if b.status in ['Booked', 'Completed'] %}
+              <a href="{{ url_for('examiner.evaluate_student', booking_id=b.id) }}" class="btn btn-primary btn-sm">
+                <i class="bi bi-pencil-square me-1"></i> {% if b.evaluation %}Edit Evaluation{% else %}Grade Student{% endif %}
+              </a>
+            {% else %}
+              <span class="text-muted small">Cancelled</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" class="empty-state">
+            <i class="bi bi-people empty-state-icon"></i>
+            <div>No students have reserved seats in this examination slot yet.</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
