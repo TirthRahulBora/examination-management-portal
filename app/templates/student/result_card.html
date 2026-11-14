@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% block title %}Scorecard — {{ evaluation.booking.examination.examination_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+      <div class="d-flex align-items-center gap-2">
+        <a href="{{ url_for('student.results') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+        <h1 class="page-title mb-0">Official Examination Scorecard</h1>
+      </div>
+      <button class="btn btn-outline-secondary btn-sm" onclick="window.print()">
+        <i class="bi bi-printer me-1"></i> Print / Save PDF
+      </button>
+    </div>
+
+    <!-- Printable Academic Result Card -->
+    <div class="card card-academic shadow-sm mb-4" id="printableCard">
+      <div class="card-body p-4 p-md-5">
+        <!-- Header Banner -->
+        <div class="border-bottom pb-4 mb-4 text-center">
+          <div class="text-uppercase fw-bold text-muted small letter-spacing-1 mb-1">Indian Institute of Technology Madras</div>
+          <h3 class="fw-bold text-primary mb-1">{{ evaluation.booking.examination.examination_name }}</h3>
+          <div class="text-muted">{{ evaluation.booking.examination.course.course_code }} - {{ evaluation.booking.examination.course.course_name }}</div>
+          <div class="badge bg-light text-dark border mt-2">Evaluation Mode: {{ evaluation.booking.examination.examination_type }}</div>
+        </div>
+
+        <!-- Student & Session Meta -->
+        <div class="row g-3 bg-light rounded p-3 mb-4 small">
+          <div class="col-sm-6">
+            <span class="text-muted">Candidate Name:</span>
+            <div class="fw-bold fs-6 text-dark">{{ evaluation.booking.student.full_name }}</div>
+            <div class="text-muted">Email: {{ evaluation.booking.student.email }}</div>
+            <div class="text-muted">Department: {{ evaluation.booking.student.department or 'Academic Division' }}</div>
+          </div>
+          <div class="col-sm-6 text-sm-end">
+            <span class="text-muted">Evaluated By:</span>
+            <div class="fw-bold fs-6 text-dark">{{ evaluation.examiner.full_name }}</div>
+            <div class="text-muted">Evaluation Date: {{ evaluation.evaluation_date | format_date }}</div>
+            <div class="text-muted">Booking Reference: #{{ evaluation.booking.id }}</div>
+          </div>
+        </div>
+
+        <!-- Rubric Breakdown Table -->
+        <h5 class="fw-bold mb-3"><i class="bi bi-card-checklist text-primary me-2"></i>Performance Rubric Breakdown</h5>
+        <div class="table-responsive mb-4">
+          <table class="table table-bordered mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 50%;">Evaluation Criterion</th>
+                <th class="text-center" style="width: 25%;">Criterion Maximum</th>
+                <th class="text-center" style="width: 25%;">Marks Awarded</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in evaluation.details %}
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ d.rubric.criterion_name }}</div>
+                  {% if d.rubric.description %}
+                    <div class="small text-muted">{{ d.rubric.description }}</div>
+                  {% endif %}
+                </td>
+                <td class="text-center text-muted">{{ d.rubric.maximum_marks }} pts</td>
+                <td class="text-center fw-bold text-primary fs-6">{{ d.marks_awarded }} pts</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+            <tfoot class="table-light">
+              <tr>
+                <th class="fw-bold">Aggregate Final Marks</th>
+                <th class="text-center fw-bold">{{ evaluation.booking.examination.maximum_marks }} pts</th>
+                <th class="text-center fw-bold text-success fs-5">{{ evaluation.total_marks }} pts</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Qualitative Remarks -->
+        {% if evaluation.remarks %}
+        <div class="card bg-light border-0 p-3 mb-4">
+          <div class="fw-bold small text-dark mb-1"><i class="bi bi-chat-quote-fill text-primary me-1"></i> Evaluator Comments & Feedback:</div>
+          <p class="mb-0 text-muted small fst-italic">{{ evaluation.remarks }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Verification Signature Block -->
+        <div class="row pt-4 border-top mt-4 text-center small text-muted">
+          <div class="col-6">
+            <div>Electronically Validated</div>
+            <div class="fw-semibold text-dark">{{ evaluation.examiner.full_name }}</div>
+            <div>Authorized Faculty Examiner</div>
+          </div>
+          <div class="col-6">
+            <div>Result Publication Status</div>
+            <div class="fw-bold text-success">OFFICIALLY RELEASED</div>
+            <div>{{ evaluation.evaluation_date | format_dt }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
