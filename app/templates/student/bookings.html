@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}My Examination Schedule & Bookings{% endblock %}
+
+{% block content %}
+<div class="page-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <h1 class="page-title">My Examination Schedule & Bookings</h1>
+    <div class="page-subtitle">Track your registered slots, audit past sessions, and manage cancellations</div>
+  </div>
+  <a href="{{ url_for('student.examinations') }}" class="btn btn-primary btn-sm">
+    <i class="bi bi-search me-1"></i> Browse More Exams
+  </a>
+</div>
+
+<div class="card card-academic">
+  <div class="table-responsive">
+    <table class="table table-custom mb-0">
+      <thead>
+        <tr>
+          <th>Booking ID</th>
+          <th>Examination</th>
+          <th>Date</th>
+          <th>Time Window</th>
+          <th>Examiner</th>
+          <th>Booking Status</th>
+          <th>Result Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td class="text-muted fw-bold">#{{ b.id }}</td>
+          <td>
+            <div class="fw-semibold">{{ b.examination.examination_name }}</div>
+            <span class="badge bg-light text-primary border small">{{ b.examination.course.course_code }}</span>
+          </td>
+          <td class="fw-semibold">{{ b.slot.examination_date | format_date }}</td>
+          <td>{{ b.slot.start_time | format_time }} – {{ b.slot.end_time | format_time }}</td>
+          <td>
+            <div class="small fw-semibold">{{ b.slot.examiner.full_name }}</div>
+            <div class="small text-muted" style="font-size: 0.75rem;">{{ b.slot.examiner.department or 'Academic' }}</div>
+          </td>
+          <td>
+            <span class="badge-status {% if b.status == 'Booked' %}badge-booking-open{% elif b.status == 'Completed' %}badge-completed{% else %}badge-cancelled{% endif %}">
+              {{ b.status }}
+            </span>
+          </td>
+          <td>
+            {% if b.evaluation and b.evaluation.is_published %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle small fw-bold">
+                {{ b.evaluation.total_marks }} / {{ b.examination.maximum_marks }}
+              </span>
+            {% elif b.evaluation and not b.evaluation.is_published %}
+              <span class="badge bg-light text-warning border small">Grading in Progress</span>
+            {% else %}
+              <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            {% if b.status == 'Booked' %}
+              {% if now <= b.examination.slot_booking_end %}
+                <form method="POST" action="{{ url_for('student.cancel_booking', booking_id=b.id) }}" class="d-inline" onsubmit="return confirm('Confirm cancellation of this slot reservation? Seat will be returned to the available pool.');">
+                  <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-x-circle me-1"></i> Cancel Booking
+                  </button>
+                </form>
+              {% else %}
+                <span class="badge bg-light text-muted border small" title="Booking change deadline passed">Locked</span>
+              {% endif %}
+            {% elif b.status == 'Completed' and b.evaluation and b.evaluation.is_published %}
+              <a href="{{ url_for('student.view_result_card', eval_id=b.evaluation.id) }}" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-award me-1"></i> Scorecard
+              </a>
+            {% else %}
+              <span class="text-muted small">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8" class="empty-state">
+            <i class="bi bi-calendar2-x empty-state-icon"></i>
+            <div>You have not reserved any examination slots yet.</div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
