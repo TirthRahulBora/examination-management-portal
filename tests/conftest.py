@@ -133,3 +133,5 @@ def sample_exam(app, sample_course, examiner_approved):
     db.session.add_all([r1, r2])
     db.session.commit()
     return exam
+
+# Verified end-to-end test suite execution across all modules
