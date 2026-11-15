@@ -16,5 +16,3 @@ class ExaminationRubric(db.Model):
 
     def __repr__(self):
         return f"<Rubric {self.id}: {self.criterion_name} (Max: {self.maximum_marks})>"
-
-# FK constraint & cascade delete linked with Examination

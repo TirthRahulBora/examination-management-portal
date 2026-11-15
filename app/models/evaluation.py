@@ -46,5 +46,3 @@ class EvaluationDetail(db.Model):
 
     def __repr__(self):
         return f"<EvaluationDetail {self.id}: Rubric {self.rubric_id} Marks={self.marks_awarded}>"
-
-# EvaluationDetail itemized breakdown schema registered

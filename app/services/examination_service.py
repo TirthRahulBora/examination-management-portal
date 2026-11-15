@@ -109,11 +109,3 @@ class ExaminationService:
             elif now > exam.slot_booking_end:
                 exam.status = 'Closed'
         db.session.commit()
-
-# Service method: Course creation and retrieval logic verified
-
-# Service method: Exam timeline boundary validation logic
-
-# Service method: Rubric weightage and maximum marks constraint enforcement
-
-# Service method: Examination status state machine management

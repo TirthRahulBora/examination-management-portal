@@ -210,11 +210,3 @@ class BookingService:
         slot.examiner_id = new_examiner.id
         db.session.commit()
         return slot
-
-# Slot creation and examiner schedule overlap prevention
-
-# Atomic seat reservation and concurrency protection
-
-# Booking cancellation with slot seat restoration
-
-# Atomic slot rescheduling service workflow

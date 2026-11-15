@@ -113,11 +113,3 @@ class EvaluationService:
         evaluation.publication_status = 'Draft'
         db.session.commit()
         return evaluation
-
-# Rubric criteria score boundary check and validation logic
-
-# Evaluation submission and aggregate mark calculation
-
-# Result publication workflows and batch publishing controls
-
-# Student performance breakdown and report generation

@@ -53,5 +53,3 @@ class Examination(db.Model):
 
     def __repr__(self):
         return f"<Examination {self.id}: {self.examination_name} ({self.status})>"
-
-# Relationship: examination_examiners secondary table association

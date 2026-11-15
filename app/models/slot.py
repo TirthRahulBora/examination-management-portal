@@ -38,5 +38,3 @@ class ExaminationSlot(db.Model):
 
     def __repr__(self):
         return f"<Slot {self.id}: Exam {self.examination_id} on {self.examination_date} {self.start_time}-{self.end_time} ({self.status})>"
-
-# Slot capacity and status validator helpers verified

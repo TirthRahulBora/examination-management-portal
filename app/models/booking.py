@@ -31,5 +31,3 @@ class Booking(db.Model):
 
     def __repr__(self):
         return f"<Booking {self.id}: Student {self.student_id} -> Slot {self.slot_id} ({self.status})>"
-
-# Enforced uniqueness per student per examination lifecycle
