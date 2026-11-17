@@ -1,5 +1,5 @@
 from datetime import datetime, date, time, timedelta
-from app.models import ExaminationSlot, Booking, Evaluation, User
+from app.models import ExaminationSlot, Booking, Evaluation, User, Examination
 from app.extensions import db
 
 def test_slot_creation_and_conflict_detection(client, app, examiner_approved, sample_exam):
@@ -126,3 +126,53 @@ def test_unauthorized_examiner_evaluation_guard(client, app, student_user, exami
     client.post('/auth/login', data={'email': 'unauthorized@test.edu', 'password': 'Pass123'})
     res = client.get(f'/examiner/bookings/{booking_id}/evaluate')
     assert res.status_code in [403, 302]
+
+def test_examiner_edit_slot_before_booking(client, app, examiner_approved, sample_course):
+    client.post('/auth/login', data={'email': 'examiner@test.edu', 'password': 'ExaminerPass123'})
+
+    now = datetime.utcnow()
+    exam = Examination(
+        course_id=sample_course.id,
+        examination_name='Slot Edit Test Exam',
+        examination_type='Viva',
+        duration=30,
+        maximum_marks=100.0,
+        slot_creation_start=now - timedelta(days=1),
+        slot_creation_end=now + timedelta(days=5),
+        slot_booking_start=now + timedelta(days=2),
+        slot_booking_end=now + timedelta(days=10),
+        status='Slot Creation'
+    )
+    exam.assigned_examiners = [examiner_approved]
+    db.session.add(exam)
+    db.session.commit()
+
+    target_date = (date.today() + timedelta(days=2)).strftime('%Y-%m-%d')
+    res = client.post(f'/examiner/examinations/{exam.id}/slots/new', data={
+        'examination_date': target_date,
+        'start_time': '11:00',
+        'end_time': '11:30',
+        'maximum_capacity': 2
+    }, follow_redirects=True)
+    assert res.status_code == 200
+
+    slot = ExaminationSlot.query.filter_by(
+        examiner_id=examiner_approved.id,
+        examination_id=exam.id,
+        start_time=time(11, 0)
+    ).first()
+    assert slot is not None
+
+    # Edit slot before booking opens
+    edit_res = client.post(f'/examiner/slots/{slot.id}/edit', data={
+        'examination_date': target_date,
+        'start_time': '11:30',
+        'end_time': '12:00',
+        'maximum_capacity': 3
+    }, follow_redirects=True)
+    assert edit_res.status_code == 200
+    assert b'Examination slot updated successfully' in edit_res.data
+
+    updated_slot = db.session.get(ExaminationSlot, slot.id)
+    assert updated_slot.start_time == time(11, 30)
+    assert updated_slot.maximum_capacity == 3

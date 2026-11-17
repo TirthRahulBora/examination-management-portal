@@ -31,6 +31,7 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     DEBUG = False
+    SESSION_COOKIE_SECURE = True
 
 config_by_name = {
     'development': DevelopmentConfig,

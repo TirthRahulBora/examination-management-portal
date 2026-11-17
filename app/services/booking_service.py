@@ -54,6 +54,46 @@ class BookingService:
         return slot
 
     @staticmethod
+    def update_slot(slot_id, examiner, exam_date, start_time, end_time, maximum_capacity):
+        """Update an owned slot before booking opens, without disturbing reservations."""
+        slot = ExaminationSlot.query.get_or_404(slot_id)
+        if examiner is not None and slot.examiner_id != examiner.id:
+            raise PermissionError("You do not have permission to modify this slot.")
+
+        exam = slot.examination
+        now = datetime.utcnow()
+        if now >= exam.slot_booking_start:
+            raise ValueError("Slots cannot be modified once the booking window has opened.")
+
+        if slot.booked_count > 0:
+            raise ValueError("Cannot edit a slot that already has student bookings.")
+
+        if end_time <= start_time:
+            raise ValueError("End time must be strictly after start time.")
+
+        if int(maximum_capacity) < 1:
+            raise ValueError("Maximum capacity must be at least 1.")
+
+        # Check for schedule conflicts with other active slots of the same examiner on the same date
+        existing_slots = ExaminationSlot.query.filter(
+            ExaminationSlot.examiner_id == slot.examiner_id,
+            ExaminationSlot.examination_date == exam_date,
+            ExaminationSlot.id != slot.id,
+            ExaminationSlot.status != 'Cancelled'
+        ).all()
+        for s in existing_slots:
+            if not (end_time <= s.start_time or start_time >= s.end_time):
+                raise ValueError(f"Slot overlaps with existing slot {s.start_time.strftime('%H:%M')}-{s.end_time.strftime('%H:%M')}.")
+
+        slot.examination_date = exam_date
+        slot.start_time = start_time
+        slot.end_time = end_time
+        slot.maximum_capacity = int(maximum_capacity)
+        slot.available_seats = int(maximum_capacity)
+        db.session.commit()
+        return slot
+
+    @staticmethod
     def delete_slot(slot_id, examiner=None, is_admin=False):
         """Delete a slot before bookings start or if empty."""
         slot = ExaminationSlot.query.get_or_404(slot_id)

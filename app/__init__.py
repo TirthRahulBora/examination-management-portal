@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from datetime import datetime
 from flask import Flask, redirect, url_for, render_template
 from flask_login import current_user
@@ -12,6 +13,15 @@ def create_app(config_name=None):
     app = Flask(__name__)
     config_obj = config_by_name.get(config_name, config_by_name['default'])
     app.config.from_object(config_obj)
+
+    database_uri = app.config.get('SQLALCHEMY_DATABASE_URI', '')
+    if database_uri.startswith('sqlite:///') and database_uri != 'sqlite://':
+        database_path = Path(database_uri.replace('sqlite:///', '', 1))
+        if not database_path.is_absolute():
+            database_path = Path(app.root_path).parent / database_path
+        database_path.parent.mkdir(parents=True, exist_ok=True)
+    if config_name == 'production' and not os.environ.get('SECRET_KEY'):
+        raise RuntimeError('SECRET_KEY must be set when FLASK_ENV=production.')
 
     # Initialize extensions
     db.init_app(app)
@@ -27,6 +37,11 @@ def create_app(config_name=None):
     app.register_blueprint(admin_bp, url_prefix='/admin')
     app.register_blueprint(examiner_bp, url_prefix='/examiner')
     app.register_blueprint(student_bp, url_prefix='/student')
+
+    # Ensure all models are registered and create tables if not present
+    from app import models  # noqa: F401
+    with app.app_context():
+        db.create_all()
 
     # Root route
     @app.route('/')

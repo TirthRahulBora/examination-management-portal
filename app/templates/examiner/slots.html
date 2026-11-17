@@ -55,6 +55,9 @@
               </a>
 
               {% if now < slot.examination.slot_booking_start and slot.booked_count == 0 %}
+                <a href="{{ url_for('examiner.edit_slot', slot_id=slot.id) }}" class="btn btn-outline-secondary" title="Edit Slot">
+                  <i class="bi bi-pencil"></i>
+                </a>
                 <form method="POST" action="{{ url_for('examiner.delete_slot', slot_id=slot.id) }}" class="d-inline" onsubmit="return confirm('Delete this examination slot?');">
                   <button type="submit" class="btn btn-outline-danger" title="Delete Slot">
                     <i class="bi bi-trash"></i>

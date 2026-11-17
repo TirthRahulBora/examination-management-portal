@@ -20,29 +20,29 @@
         <form method="POST">
           <div class="mb-3">
             <label for="examination_date" class="form-label small fw-semibold">Examination Date *</label>
-            <input type="date" class="form-control" id="examination_date" name="examination_date" required autofocus>
+            <input type="date" class="form-control" id="examination_date" name="examination_date" value="{{ slot.examination_date.isoformat() if slot else '' }}" required autofocus>
           </div>
 
           <div class="row g-2 mb-3">
             <div class="col-md-6">
               <label for="start_time" class="form-label small fw-semibold">Start Time *</label>
-              <input type="time" class="form-control" id="start_time" name="start_time" required>
+              <input type="time" class="form-control" id="start_time" name="start_time" value="{{ slot.start_time.strftime('%H:%M') if slot else '' }}" required>
             </div>
             <div class="col-md-6">
               <label for="end_time" class="form-label small fw-semibold">End Time *</label>
-              <input type="time" class="form-control" id="end_time" name="end_time" required>
+              <input type="time" class="form-control" id="end_time" name="end_time" value="{{ slot.end_time.strftime('%H:%M') if slot else '' }}" required>
             </div>
           </div>
 
           <div class="mb-4">
             <label for="maximum_capacity" class="form-label small fw-semibold">Maximum Student Capacity *</label>
-            <input type="number" class="form-control" id="maximum_capacity" name="maximum_capacity" min="1" max="50" value="1" required>
+            <input type="number" class="form-control" id="maximum_capacity" name="maximum_capacity" min="1" max="50" value="{{ slot.maximum_capacity if slot else 1 }}" required>
             <div class="form-text">Number of students permitted to simultaneously reserve this slot.</div>
           </div>
 
           <div class="d-flex justify-content-between align-items-center">
             <a href="{{ url_for('examiner.slots') }}" class="btn btn-outline-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary px-4">Create Slot</button>
+            <button type="submit" class="btn btn-primary px-4">{{ action }} Slot</button>
           </div>
         </form>
       </div>

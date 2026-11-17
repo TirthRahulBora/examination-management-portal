@@ -104,6 +104,25 @@ def new_slot(exam_id):
 
     return render_template('examiner/slot_form.html', action='Create', exam=exam, slot=None)
 
+@examiner_bp.route('/slots/<int:slot_id>/edit', methods=['GET', 'POST'])
+def edit_slot(slot_id):
+    slot = ExaminationSlot.query.get_or_404(slot_id)
+    if slot.examiner_id != current_user.id:
+        abort(403)
+    exam = slot.examination
+    if request.method == 'POST':
+        try:
+            exam_date = datetime.strptime(request.form.get('examination_date', ''), '%Y-%m-%d').date()
+            start_time = datetime.strptime(request.form.get('start_time', ''), '%H:%M').time()
+            end_time = datetime.strptime(request.form.get('end_time', ''), '%H:%M').time()
+            capacity = int(request.form.get('maximum_capacity', '1'))
+            BookingService.update_slot(slot.id, current_user, exam_date, start_time, end_time, capacity)
+            flash("Examination slot updated successfully.", 'success')
+            return redirect(url_for('examiner.slots'))
+        except (ValueError, TypeError, PermissionError) as exc:
+            flash(f"Error updating slot: {exc}", 'danger')
+    return render_template('examiner/slot_form.html', action='Edit', exam=exam, slot=slot)
+
 @examiner_bp.route('/slots/<int:slot_id>/delete', methods=['POST'])
 def delete_slot(slot_id):
     try:
