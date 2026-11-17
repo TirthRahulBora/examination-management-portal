@@ -2,7 +2,7 @@
 
 **Project:** Examination Management Portal (EMP)  
 **Developer:** Tirth Bora  
-**Repository:** https://github.com/TirthBora/examination-management-portal  
+**Repository:** https://github.com/TirthRahulBora/examination-management-portal  
 **Project Window:** 1 November 2026 – 15 November 2026  
 **Total Development Days:** 15 Days  
 **Average Daily Velocity:** 5–6 Commits / Day (Total 79 Commits)

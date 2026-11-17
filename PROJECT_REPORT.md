@@ -12,7 +12,7 @@
 - **Course / Module:** Tools in Data Science / Application Development Practice (MAD-1 / TDS)
 - **Project Title:** Examination Management Portal (EMP)
 - **Submission Package:** `EMP_24f3002455.zip`
-- **Repository URL:** https://github.com/TirthBora/examination-management-portal
+- **Repository URL:** https://github.com/TirthRahulBora/examination-management-portal
 - **Submission Date:** November 2026
 - **Demonstration Video Link:** `[Google Drive / YouTube Video Link Placeholder - Enter URL Here]`
 

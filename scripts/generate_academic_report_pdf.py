@@ -175,7 +175,7 @@ def build_pdf(output_path):
          Paragraph("<b>Institution:</b>", meta_label), Paragraph("IIT Madras", meta_val)],
         [Paragraph("<b>Program:</b>", meta_label), Paragraph("BS in Data Science & Applications", meta_val),
          Paragraph("<b>Package Name:</b>", meta_label), Paragraph("<code>EMP_24f3002455.zip</code>", code_style)],
-        [Paragraph("<b>Repository:</b>", meta_label), Paragraph("github.com/TirthBora/examination-management-portal", code_style),
+        [Paragraph("<b>Repository:</b>", meta_label), Paragraph("github.com/TirthRahulBora/examination-management-portal", code_style),
          Paragraph("<b>Course:</b>", meta_label), Paragraph("Tools in Data Science (MAD-1 / TDS)", meta_val)],
         [Paragraph("<b>Demo Video URL:</b>", meta_label), Paragraph("<i>[Google Drive / YouTube Video Link Placeholder - Enter URL Here]</i>", meta_val),
          Paragraph("<b>Submission Date:</b>", meta_label), Paragraph("November 2026", meta_val)],
