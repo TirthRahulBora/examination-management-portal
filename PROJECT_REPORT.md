@@ -220,47 +220,54 @@ erDiagram
    `EvaluationService.submit_evaluation` requires marks for every single configured rubric criterion associated with the examination. Evaluations with omitted or partial criteria are rejected. Total marks cannot exceed the examination ceiling.
 7. **Cross-Site Request Forgery (CSRF) Defense:**  
    State-changing POST, PUT, and DELETE operations across all user roles require a cryptographically verified CSRF token generated via `secrets.token_hex(32)` and validated using constant-time string comparison (`hmac.compare_digest`). Debug mode is disabled by default.
+8. **Insecure Direct Object Reference (IDOR) Defense & Numerical Sanitization:**  
+   Direct object identifiers on sensitive endpoints (such as student scorecards `/student/results/<id>`, examiner evaluation forms, and booking cancellations) enforce strict ownership checks against `current_user.id` and respond with 403 Forbidden upon unauthorized access. Floating-point rubric scores explicitly reject `NaN` and `Infinite` inputs.
 
 ---
 
 ### 8. Quality Assurance & Pytest Verification
 
-A test suite containing **26 automated test cases** was implemented in `tests/` using `pytest`. All tests execute against an in-memory SQLite database utilizing SQLAlchemy's `StaticPool` for concurrency isolation within the project virtual environment (`pip install -r requirements.txt`).
+A test suite containing **31 automated test cases** was implemented in `tests/` using `pytest`. All tests execute against an in-memory SQLite database utilizing SQLAlchemy's `StaticPool` for concurrency isolation within the project virtual environment (`pip install -r requirements.txt`).
 
 ```
 ================================ test session starts =================================
 platform win32 -- Python 3.13.12, pytest-9.2.0, pluggy-1.7.0
 rootdir: D:\Dev_Projects\IITM Tools in DS\examination-management-portal
-collected 26 items
+collected 31 items
 
-tests/test_admin.py::test_course_crud PASSED                                   [  4%]
-tests/test_admin.py::test_examination_management PASSED                        [  8%]
-tests/test_admin.py::test_rubric_management PASSED                             [ 12%]
-tests/test_admin.py::test_examiner_deactivation_and_reassignment PASSED        [ 15%]
-tests/test_admin.py::test_examiner_reassignment_conflict_prevention PASSED     [ 19%]
-tests/test_auth.py::test_admin_login PASSED                                    [ 23%]
-tests/test_auth.py::test_student_registration_and_login PASSED                 [ 27%]
-tests/test_auth.py::test_examiner_registration_and_pending_approval PASSED       [ 31%]
-tests/test_auth.py::test_examiner_approval_workflow PASSED                     [ 35%]
-tests/test_auth.py::test_role_based_access_restrictions PASSED                 [ 38%]
-tests/test_auth.py::test_csrf_token_validation PASSED                          [ 42%]
-tests/test_booking.py::test_overbooking_prevention PASSED                      [ 46%]
-tests/test_booking.py::test_duplicate_booking_prevention PASSED                [ 50%]
-tests/test_booking.py::test_booking_deadline_enforcement PASSED                [ 54%]
-tests/test_booking.py::test_slot_creation_deadline_enforcement PASSED          [ 58%]
-tests/test_booking.py::test_admin_rescheduling PASSED                          [ 62%]
-tests/test_booking.py::test_cancellation_deadline_boundary_enforcement PASSED [ 65%]
-tests/test_examiner.py::test_slot_creation_and_conflict_detection PASSED       [ 69%]
-tests/test_examiner.py::test_rubric_evaluation_submission PASSED               [ 73%]
-tests/test_examiner.py::test_unauthorized_examiner_evaluation_guard PASSED       [ 77%]
-tests/test_examiner.py::test_examiner_edit_slot_before_booking PASSED         [ 81%]
-tests/test_examiner.py::test_slot_editing_creation_window_enforcement PASSED  [ 85%]
-tests/test_examiner.py::test_evaluation_incomplete_rubric_rejection PASSED    [ 88%]
-tests/test_student.py::test_student_browse_and_book_slot PASSED                [ 92%]
-tests/test_student.py::test_student_booking_cancellation PASSED                [ 96%]
-tests/test_student.py::test_result_publication_visibility PASSED               [100%]
+tests/test_admin.py::test_course_crud PASSED                             [  3%]
+tests/test_admin.py::test_examination_management PASSED                  [  6%]
+tests/test_admin.py::test_rubric_management PASSED                       [  9%]
+tests/test_admin.py::test_examiner_deactivation_and_reassignment PASSED  [ 12%]
+tests/test_admin.py::test_examiner_reassignment_conflict_prevention PASSED [ 16%]
+tests/test_auth.py::test_admin_login PASSED                              [ 19%]
+tests/test_auth.py::test_student_registration_and_login PASSED           [ 22%]
+tests/test_auth.py::test_examiner_registration_and_pending_approval PASSED [ 25%]
+tests/test_auth.py::test_examiner_approval_workflow PASSED               [ 29%]
+tests/test_auth.py::test_role_based_access_restrictions PASSED           [ 32%]
+tests/test_auth.py::test_csrf_token_validation PASSED                    [ 35%]
+tests/test_auth.py::test_production_secret_key_requirement PASSED        [ 38%]
+tests/test_booking.py::test_overbooking_prevention PASSED                [ 41%]
+tests/test_booking.py::test_duplicate_booking_prevention PASSED          [ 45%]
+tests/test_booking.py::test_booking_deadline_enforcement PASSED          [ 48%]
+tests/test_booking.py::test_slot_creation_deadline_enforcement PASSED    [ 51%]
+tests/test_booking.py::test_admin_rescheduling PASSED                    [ 54%]
+tests/test_booking.py::test_cancellation_deadline_boundary_enforcement PASSED [ 58%]
+tests/test_booking.py::test_atomic_capacity_exhaustion PASSED            [ 61%]
+tests/test_examiner.py::test_slot_creation_and_conflict_detection PASSED [ 64%]
+tests/test_examiner.py::test_rubric_evaluation_submission PASSED         [ 67%]
+tests/test_examiner.py::test_unauthorized_examiner_evaluation_guard PASSED [ 70%]
+tests/test_examiner.py::test_examiner_edit_slot_before_booking PASSED    [ 74%]
+tests/test_examiner.py::test_slot_editing_creation_window_enforcement PASSED [ 77%]
+tests/test_examiner.py::test_evaluation_incomplete_rubric_rejection PASSED [ 80%]
+tests/test_examiner.py::test_evaluation_nan_inf_rejection PASSED         [ 83%]
+tests/test_student.py::test_student_browse_and_book_slot PASSED          [ 87%]
+tests/test_student.py::test_student_booking_cancellation PASSED          [ 90%]
+tests/test_student.py::test_result_publication_visibility PASSED         [ 93%]
+tests/test_student.py::test_student_idor_scorecard_forbidden PASSED      [ 96%]
+tests/test_student.py::test_student_idor_cancel_booking_forbidden PASSED [100%]
 
-============================= 26 passed in 21.02s =============================
+============================= 31 passed in 23.27s =============================
 ```
 
 ---

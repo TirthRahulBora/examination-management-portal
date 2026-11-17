@@ -1,3 +1,4 @@
+import math
 from datetime import datetime
 from app.extensions import db
 from app.models import Evaluation, EvaluationDetail, Booking, ExaminationRubric
@@ -50,7 +51,11 @@ class EvaluationService:
             rubric = valid_rubrics[rubric_id]
             try:
                 score = float(mark_val)
-            except (ValueError, TypeError):
+                if math.isnan(score) or math.isinf(score):
+                    raise ValueError(f"Score for '{rubric.criterion_name}' cannot be NaN or Infinite.")
+            except (ValueError, TypeError) as exc:
+                if "NaN or Infinite" in str(exc):
+                    raise
                 raise ValueError(f"Invalid mark provided for criterion '{rubric.criterion_name}'.")
 
             if score < 0:

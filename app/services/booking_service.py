@@ -147,9 +147,21 @@ class BookingService:
             raise ValueError(f"Duplicate booking prohibited: You already have an active booking for {exam.examination_name}.")
 
         # 4. Reserve seat and update slot status atomically
-        slot.available_seats -= 1
-        if slot.available_seats <= 0:
-            slot.status = 'Full'
+        # Atomic conditional update prevents overselling even under concurrent requests
+        updated_rows = db.session.query(ExaminationSlot).filter(
+            ExaminationSlot.id == slot.id,
+            ExaminationSlot.available_seats > 0,
+            ExaminationSlot.status == 'Available'
+        ).update({
+            ExaminationSlot.available_seats: ExaminationSlot.available_seats - 1,
+            ExaminationSlot.status: db.case(
+                (ExaminationSlot.available_seats - 1 <= 0, 'Full'),
+                else_='Available'
+            )
+        }, synchronize_session='fetch')
+
+        if updated_rows == 0:
+            raise ValueError("This examination slot is full or unavailable (capacity exhausted).")
 
         booking = Booking(
             student_id=student_id,

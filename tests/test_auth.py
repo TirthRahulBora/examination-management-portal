@@ -1,3 +1,5 @@
+import pytest
+from app import create_app
 from app.models import User
 from app.extensions import db
 
@@ -118,3 +120,8 @@ def test_csrf_token_validation(app):
     finally:
         app.config['WTF_CSRF_ENABLED'] = False
         app.config['TESTING'] = True
+
+def test_production_secret_key_requirement(monkeypatch):
+    monkeypatch.delenv('SECRET_KEY', raising=False)
+    with pytest.raises(RuntimeError, match="SECRET_KEY must be set when FLASK_ENV=production"):
+        create_app('production')

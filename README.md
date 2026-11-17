@@ -30,7 +30,7 @@ Following strict project specifications, no external frontend frameworks (React,
 | **Authentication** | Flask-Login & Werkzeug Security | PBKDF2-SHA256 password hashing, session management, RBAC |
 | **Frontend** | HTML5, Jinja2, Bootstrap 5.3 | Responsive academic UI, statistic cards, modal forms |
 | **Icons & Styling**| Bootstrap Icons & Custom CSS | Clean academic layout with status badge taxonomy |
-| **Testing** | Pytest 9.2 | 20 automated unit and integration tests |
+| **Testing** | Pytest 9.2 | 31 automated unit and integration tests |
 
 ---
 
@@ -83,7 +83,7 @@ examination-management-portal/
 ├── instance/
 │   └── emp.db                     # Local SQLite database
 │
-├── tests/                         # Pytest Automated Test Suite (20 Tests)
+├── tests/                         # Pytest Automated Test Suite (31 Tests)
 │   ├── conftest.py                # Shared fixtures with StaticPool SQLite in-memory DB
 │   ├── test_auth.py               # Authentication, registration & RBAC URL guards
 │   ├── test_admin.py              # Admin CRUD, examiner approval & slot reassignment
@@ -284,12 +284,12 @@ A complete test suite covering all critical business logic, security guards, and
 pytest tests -v
 ```
 
-### Test Coverage Highlights (20 Passing Tests):
-- **Authentication (`tests/test_auth.py`):** Admin login, student registration, examiner self-registration, pending approval gate, approval by administrator, role-based URL protection (HTTP 403).
-- **Admin Operations (`tests/test_admin.py`):** Course CRUD, examination creation, rubric mark ceiling validation, examiner verification, and slot examiner reassignment.
-- **Examiner Operations (`tests/test_examiner.py`):** Slot creation, schedule conflict prevention, candidate roster viewing, rubric evaluation submission with mark range checks, and unauthorized examiner access blocking.
-- **Student Operations (`tests/test_student.py`):** Catalog search, slot reservation, real-time seat decrement, student cancellation, and published scorecard visibility.
-- **Critical Business Rules (`tests/test_booking.py`):** Slot overbooking prevention, duplicate active booking prevention for the same exam, booking window deadline enforcement, slot authoring window enforcement, and admin slot rescheduling.
+### Test Coverage Highlights (31 Passing Tests):
+- **Authentication (`tests/test_auth.py`):** Admin login, student registration, examiner self-registration, pending approval gate, approval by administrator, role-based URL protection (HTTP 403), CSRF token validation on state-changing requests, and production secret key enforcement.
+- **Admin Operations (`tests/test_admin.py`):** Course CRUD, examination creation, rubric mark ceiling validation, examiner verification, and slot examiner reassignment with schedule conflict checks.
+- **Examiner Operations (`tests/test_examiner.py`):** Slot creation, schedule conflict prevention, slot editing within creation window, candidate roster viewing, mandatory complete rubric scoring, rejection of NaN/Inf scores, and unauthorized examiner access blocking.
+- **Student Operations (`tests/test_student.py`):** Catalog search, slot reservation, real-time seat decrement, student cancellation, published scorecard visibility, and IDOR protection against unauthorized scorecard access and booking cancellation.
+- **Critical Business Rules (`tests/test_booking.py`):** Slot overbooking prevention, duplicate active booking prevention for the same exam, booking window deadline enforcement, slot authoring window enforcement, cancellation deadline boundary enforcement, atomic seat capacity exhaustion under concurrency, and admin slot rescheduling.
 
 ---
 

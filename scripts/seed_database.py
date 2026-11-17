@@ -21,17 +21,19 @@ def seed():
 
         print("[EMP SEED] Seeding Users...")
         # 1. Admin
-        admin = User.query.filter_by(email='admin@emp.edu').first()
+        admin_email = os.environ.get('EMP_ADMIN_EMAIL', 'admin@emp.edu')
+        admin_password = os.environ.get('EMP_ADMIN_PASSWORD', 'AdminPassword@123')
+        admin = User.query.filter_by(email=admin_email).first()
         if not admin:
             admin = User(
                 full_name='System Administrator',
-                email='admin@emp.edu',
+                email=admin_email,
                 role='admin',
                 department='Examination Office',
                 contact_number='+91-44-2257-8000',
                 status='active'
             )
-            admin.set_password('AdminPassword@123')
+            admin.set_password(admin_password)
             db.session.add(admin)
 
         # 2. Examiners

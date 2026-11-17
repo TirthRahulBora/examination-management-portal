@@ -233,3 +233,35 @@ def test_cancellation_deadline_boundary_enforcement(app, examiner_approved, samp
     # Attempting to cancel after/at booking deadline must be rejected
     with pytest.raises(ValueError, match="Cancellation deadline has passed"):
         BookingService.cancel_booking(booking_id=booking.id, user=student)
+
+def test_atomic_capacity_exhaustion(app, student_user, examiner_approved, sample_exam):
+    slot = ExaminationSlot(
+        examination_id=sample_exam.id,
+        examiner_id=examiner_approved.id,
+        examination_date=date.today() + timedelta(days=2),
+        start_time=time(9, 0),
+        end_time=time(9, 30),
+        maximum_capacity=1,
+        available_seats=1,
+        status='Available'
+    )
+    db.session.add(slot)
+    db.session.commit()
+
+    # First booking claims the only available seat
+    b1 = BookingService.book_slot(student_id=student_user.id, slot_id=slot.id)
+    assert b1 is not None
+
+    # Slot must reflect Full and 0 available seats
+    s = db.session.get(ExaminationSlot, slot.id)
+    assert s.available_seats == 0
+    assert s.status == 'Full'
+
+    # Second student attempting to book must be rejected
+    student2 = User(full_name='Second Student', email='second_student@test.edu', role='student', status='active')
+    student2.set_password('Pass123')
+    db.session.add(student2)
+    db.session.commit()
+
+    with pytest.raises(ValueError, match="full or unavailable"):
+        BookingService.book_slot(student_id=student2.id, slot_id=slot.id)

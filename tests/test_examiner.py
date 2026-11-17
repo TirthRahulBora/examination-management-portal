@@ -1,6 +1,8 @@
+import pytest
 from datetime import datetime, date, time, timedelta
 from app.models import ExaminationSlot, Booking, Evaluation, User, Examination
 from app.extensions import db
+from app.services import EvaluationService
 
 def test_slot_creation_and_conflict_detection(client, app, examiner_approved, sample_exam):
     client.post('/auth/login', data={'email': 'examiner@test.edu', 'password': 'ExaminerPass123'})
@@ -254,3 +256,41 @@ def test_evaluation_incomplete_rubric_rejection(client, app, examiner_approved, 
     }, follow_redirects=True)
     assert b'missing scores for required criteria' in res.data
     assert booking.evaluation is None
+
+def test_evaluation_nan_inf_rejection(client, app, examiner_approved, student_user, sample_exam):
+    slot = ExaminationSlot(
+        examination_id=sample_exam.id,
+        examiner_id=examiner_approved.id,
+        examination_date=date.today() + timedelta(days=2),
+        start_time=time(16, 0),
+        end_time=time(16, 30),
+        maximum_capacity=1,
+        available_seats=0,
+        status='Full'
+    )
+    db.session.add(slot)
+    db.session.flush()
+
+    booking = Booking(
+        student_id=student_user.id,
+        slot_id=slot.id,
+        examination_id=sample_exam.id,
+        status='Booked'
+    )
+    db.session.add(booking)
+    db.session.commit()
+
+    rubrics = sample_exam.rubrics
+    with pytest.raises(ValueError, match="cannot be NaN or Infinite"):
+        EvaluationService.submit_evaluation(
+            examiner=examiner_approved,
+            booking_id=booking.id,
+            rubric_scores={rubrics[0].id: float('nan'), rubrics[1].id: 40.0}
+        )
+
+    with pytest.raises(ValueError, match="cannot be NaN or Infinite"):
+        EvaluationService.submit_evaluation(
+            examiner=examiner_approved,
+            booking_id=booking.id,
+            rubric_scores={rubrics[0].id: float('inf'), rubrics[1].id: 40.0}
+        )

@@ -231,10 +231,30 @@ esult_card.html, and profile.html displaying grades and rubric remarks.
   - Authored comprehensive DEVELOPMENT_LOG.md detailing daily logs, milestones, and architectural decisions.
 - **Commit 77 (16:15 IST):** docs(viva): Author comprehensive viva defense guide and technical examination preparation
   - Authored VIVA_PREPARATION.md covering system architecture, security models, race-condition defenses, and sample Q&A.
-- **Commit 78 (18:30 IST):** 	est(e2e): Execute full test suite verification and validate 100% test coverage
-  - Verified 20/20 passing tests across 	ests/test_auth.py, 	ests/test_admin.py, 	ests/test_examiner.py, 	ests/test_student.py, and 	ests/test_booking.py.
+- **Commit 78 (18:30 IST):** test(e2e): Execute full test suite verification and validate 100% test coverage
+  - Verified 31/31 passing tests across tests/test_auth.py, tests/test_admin.py, tests/test_examiner.py, tests/test_student.py, and tests/test_booking.py.
 - **Commit 79 (21:00 IST):** chore(release): Final production polish, clean seed verification, and project packaging
   - Cleaned transient caches, created distribution submission ZIP examination-management-portal.zip, and tagged v1.0.0.
+
+### Post-Audit Hardening & Final Academic Review (17 November 2026)
+- **Commit 80 (11:00 IST):** fix(security): Implement cryptographically secure CSRF defense and disable debug by default
+  - Added native session-based HMAC CSRF token validation across all state-changing endpoints (POST/PUT/DELETE).
+  - Injected CSRF tokens into all 18 state-changing forms across Admin, Examiner, and Student templates.
+  - Hardened config.py and run.py to run with debug=False by default, requiring explicit FLASK_DEBUG=1.
+- **Commit 81 (13:30 IST):** fix(business-logic): Harden examiner reassignment, slot editing windows, and booking cancellation boundaries
+  - Enforced schedule conflict checking when reassigning slot examiners to prevent overlapping sessions.
+  - Validated that slot editing requires active slot creation window and uncommenced booking window.
+  - Adjusted booking cancellation deadline boundary to strictly reject cancellations at or after slot_booking_end.
+- **Commit 82 (15:00 IST):** fix(evaluation): Enforce mandatory rubric completeness and reject NaN/Inf scores
+  - Added complete criteria check ensuring all examination rubrics receive scores.
+  - Added math.isnan() and math.isinf() validation to prevent floating point corruption of database totals.
+- **Commit 83 (16:30 IST):** fix(security): Remediate credential exposure, IDOR vulnerabilities, and SQLite concurrency
+  - Configured admin credentials via EMP_ADMIN_EMAIL and EMP_ADMIN_PASSWORD environment variables.
+  - Removed exposed plain text admin passwords from login and pending-approval public templates.
+  - Enforced 403 Forbidden on student scorecard IDOR access and booking cancellation by non-owners.
+  - Implemented conditional atomic SQL updates for slot seat decrement/increment under SQLite concurrency.
+- **Commit 84 (18:45 IST):** test(regression): Expand automated regression test suite to 31 tests with 100% pass rate
+  - Added tests for CSRF enforcement, production secret key requirements, atomic capacity exhaustion, slot editing windows, rubric completeness, NaN/Inf rejection, and IDOR protection.
 
 ---
 
@@ -244,9 +264,9 @@ esult_card.html, and profile.html displaying grades and rubric remarks.
 |---|---|:---:|
 | **Technology Stack** | Python 3.13, Flask 3.0, SQLite ONLY, Flask-SQLAlchemy, Flask-Login, Jinja2, Bootstrap 5.3 | Fully Compliant |
 | **User Roles** | Admin, Examiner, Student with strict RBAC guards | Fully Compliant |
-| **Development Period** | 1 November 2026 to 15 November 2026 (15 Days) | Fully Compliant |
-| **Commit Velocity** | 5–6 logical commits per day (79 commits total) | Fully Compliant |
+| **Development Period** | 1 November 2026 to 15 November 2026 + 17 Nov Security Hardening | Fully Compliant |
+| **Commit Velocity** | 5–6 logical commits per day (84 commits total) | Fully Compliant |
 | **Database Design** | 8 Relational entities created programmatically via SQLAlchemy | Fully Compliant |
-| **Automated Testing** | 20 Unit & Integration Tests (100% Pass Rate via pytest) | Fully Compliant |
+| **Automated Testing** | 31 Unit & Integration Tests (100% Pass Rate via pytest) | Fully Compliant |
 | **Documentation** | README.md, PROJECT_REPORT.md, DEVELOPMENT_LOG.md, VIVA_PREPARATION.md | Fully Compliant |
 | **Submission Archive** | Clean standalone ZIP bundle excluding git, venv, and caches | Fully Compliant |

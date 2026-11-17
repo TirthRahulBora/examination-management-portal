@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
 from app.extensions import db
 from app.models import (
@@ -170,8 +170,7 @@ def results():
 def view_result_card(eval_id):
     evaluation = Evaluation.query.get_or_404(eval_id)
     if evaluation.booking.student_id != current_user.id:
-        flash("Access forbidden.", 'danger')
-        return redirect(url_for('student.results'))
+        abort(403)
     if not evaluation.is_published:
         flash("This evaluation result is not yet published.", 'warning')
         return redirect(url_for('student.results'))

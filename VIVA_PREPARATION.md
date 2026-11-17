@@ -140,7 +140,7 @@ Business logic is not mixed directly into view route functions:
 25. **Q: Why was `StaticPool` necessary for testing?**  
     *A:* In standard SQLite in-memory mode, each new database connection creates a fresh, empty in-memory database. `StaticPool` forces all connections in the test client to share the exact same in-memory database instance.
 26. **Q: How many tests did you implement and what do they verify?**  
-    *A:* 20 automated pytest tests covering all role operations: authentication, student/examiner registration, admin approval, course/exam CRUD, slot creation conflicts, overbooking prevention, duplicate booking rejection, deadline enforcement, cancellation capacity restoration, and rubric grading.
+    *A:* 31 automated pytest tests covering all role operations: authentication, student/examiner registration, admin approval, course/exam CRUD, slot creation conflicts, slot editing within creation windows, overbooking prevention, atomic capacity exhaustion under concurrency, duplicate booking rejection, deadline enforcement, cancellation capacity restoration, complete rubric grading, rejection of NaN/Inf scores, CSRF validation, production secret key enforcement, and IDOR protection.
 
 ### Security & Compliance
 27. **Q: How does the system prevent SQL injection?**  
@@ -151,6 +151,16 @@ Business logic is not mixed directly into view route functions:
     *A:* Session fixation occurs when an attacker sets a victim's session ID before login. Flask-Login regenerates the session ID upon `login_user()`, invalidating pre-authentication sessions.
 30. **Q: What Git branching and commit practices did you follow?**  
     *A:* We maintained a clean `main` branch with structured, logical commits following conventional commit standards (`feat:`, `chore:`, `test:`), regular pushes to GitHub, and a live synchronized `DEVELOPMENT_LOG.md`.
+31. **Q: How does your application protect against Cross-Site Request Forgery (CSRF)?**  
+    *A:* A cryptographically secure 32-byte hexadecimal token is generated via `secrets.token_hex(32)` and bound to the user's session. In `app/__init__.py`, an `@app.before_request` hook validates that any state-changing method (POST, PUT, DELETE, PATCH) contains this token and compares it using `hmac.compare_digest` in constant time.
+32. **Q: How is Insecure Direct Object Reference (IDOR) prevented on student scorecards and bookings?**  
+    *A:* In `student.py`, endpoints accepting object IDs (such as `/student/results/<int:eval_id>` and `/student/bookings/<int:booking_id>/cancel`) verify that the underlying entity belongs to `current_user.id`. If a student attempts to access another candidate's scorecard or cancel another student's booking, the server halts execution with HTTP 403 Forbidden.
+33. **Q: How does the application guarantee seat capacity safety under concurrent SQLite requests?**  
+    *A:* SQLite operates with database-level write transactions rather than row-level locks. To guarantee zero overselling, `BookingService.book_slot` executes a conditional atomic update: `UPDATE examination_slots SET available_seats = available_seats - 1 WHERE id = :slot_id AND available_seats > 0`. If another concurrent request claims the last seat first, the affected row count is 0, immediately triggering a rejection before any booking row is committed.
+34. **Q: What prevents an examiner from submitting an incomplete evaluation that omits certain criteria?**  
+    *A:* `EvaluationService.submit_evaluation` computes the set difference between the examination's configured rubric criteria IDs and the submitted score keys (`required_ids - submitted_ids`). If any criteria are omitted, the submission is rejected with an informative error listing the missing criteria names.
+35. **Q: How do you prevent floating-point anomalies (such as NaN or Infinity) from corrupting evaluation scores?**  
+    *A:* `EvaluationService` parses submitted marks and runs `math.isnan(score) or math.isinf(score)`. Python's native comparison operators with `NaN` always return `False`, which would otherwise allow unvalidated `NaN` values to bypass bounds checks; explicitly testing with `math.isnan()` ensures only real finite numbers within `[0, criterion.max_marks]` are accepted.
 
 ---
 
