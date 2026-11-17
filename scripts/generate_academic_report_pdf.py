@@ -42,7 +42,7 @@ class NumberedCanvas(canvas.Canvas):
         self.setStrokeColor(colors.HexColor("#d0d7de"))
         self.setLineWidth(0.5)
         self.line(36, 42, 576, 42)
-        self.drawString(36, 30, "Candidate: Tirth Bora (tirthbora8806@gmail.com) | Final Submission Package")
+        self.drawString(36, 30, "Candidate: Tirth Bora (Roll: 24f3002455 | tirthbora8806@gmail.com) | EMP_24f3002455.zip")
         page_str = f"Page {self._pageNumber} of {page_count}"
         self.drawRightString(576, 30, page_str)
         self.restoreState()
@@ -170,15 +170,17 @@ def build_pdf(output_path):
     # Meta Table (Student details & project ID)
     meta_data = [
         [Paragraph("<b>Student Name:</b>", meta_label), Paragraph("Tirth Bora", meta_val),
-         Paragraph("<b>Institution:</b>", meta_label), Paragraph("IIT Madras", meta_val)],
+         Paragraph("<b>Roll Number:</b>", meta_label), Paragraph("<b>24f3002455</b>", meta_val)],
         [Paragraph("<b>Email:</b>", meta_label), Paragraph("tirthbora8806@gmail.com", meta_val),
-         Paragraph("<b>Program:</b>", meta_label), Paragraph("BS in Data Science & Applications", meta_val)],
+         Paragraph("<b>Institution:</b>", meta_label), Paragraph("IIT Madras", meta_val)],
+        [Paragraph("<b>Program:</b>", meta_label), Paragraph("BS in Data Science & Applications", meta_val),
+         Paragraph("<b>Package Name:</b>", meta_label), Paragraph("<code>EMP_24f3002455.zip</code>", code_style)],
         [Paragraph("<b>Repository:</b>", meta_label), Paragraph("github.com/TirthBora/examination-management-portal", code_style),
          Paragraph("<b>Course:</b>", meta_label), Paragraph("Tools in Data Science (MAD-1 / TDS)", meta_val)],
         [Paragraph("<b>Demo Video URL:</b>", meta_label), Paragraph("<i>[Google Drive / YouTube Video Link Placeholder - Enter URL Here]</i>", meta_val),
          Paragraph("<b>Submission Date:</b>", meta_label), Paragraph("November 2026", meta_val)],
     ]
-    t_meta = Table(meta_data, colWidths=[90, 180, 80, 190])
+    t_meta = Table(meta_data, colWidths=[90, 180, 85, 185])
     t_meta.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, -1), BG_LIGHT),
         ('BOX', (0, 0), (-1, -1), 0.8, BORDER_COLOR),

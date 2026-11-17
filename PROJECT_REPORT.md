@@ -5,13 +5,15 @@
 
 ### 1. Student & Project Identification
 - **Student Name:** Tirth Bora
+- **Roll Number:** 24f3002455
 - **Email Address:** tirthbora8806@gmail.com
 - **Degree Program:** BS in Data Science & Applications / Diploma in Programming
 - **Institution:** Indian Institute of Technology Madras (IIT Madras)
-- **Course / Module:** Tools in Data Science / Application Development Practice
+- **Course / Module:** Tools in Data Science / Application Development Practice (MAD-1 / TDS)
 - **Project Title:** Examination Management Portal (EMP)
+- **Submission Package:** `EMP_24f3002455.zip`
 - **Repository URL:** https://github.com/TirthBora/examination-management-portal
-- **Submission Date:** 15 November 2026
+- **Submission Date:** November 2026
 - **Demonstration Video Link:** `[Google Drive / YouTube Video Link Placeholder - Enter URL Here]`
 
 ---

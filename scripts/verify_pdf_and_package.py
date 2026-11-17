@@ -44,8 +44,8 @@ def package_submission(project_dir, zip_destinations):
                 continue
             if 'instance' in parts and file_path.suffix == '.db':
                 continue
-            if f.endswith('.zip') and ('Submission' in f or 'portal' in f):
-                # Skip existing zip archives
+            if f.endswith('.zip'):
+                # Skip any existing zip archives
                 continue
 
             arcname = f"{top_folder_name}/{rel_file.as_posix()}"
@@ -130,6 +130,8 @@ if __name__ == '__main__':
     # 2. Package Zip
     downloads_dir = Path(os.environ.get('USERPROFILE', 'C:/Users/tirth')) / 'Downloads'
     destinations = [
+        project_root / 'EMP_24f3002455.zip',
+        downloads_dir / 'EMP_24f3002455.zip',
         project_root / 'EMP_Final_Submission.zip',
         downloads_dir / 'EMP_Final_Submission.zip'
     ]
@@ -139,6 +141,6 @@ if __name__ == '__main__':
     # 3. Audit primary archive
     audit_ok = audit_zip(destinations[0])
     if audit_ok:
-        print("\n[SUCCESS] Final submission package is fully compliant and ready.")
+        print("\n[SUCCESS] Final submission package EMP_24f3002455.zip is fully compliant and ready.")
     else:
         print("\n[FAILURE] Submission packaging audit failed.")
