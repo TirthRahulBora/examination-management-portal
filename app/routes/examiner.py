@@ -165,8 +165,9 @@ def evaluate_student(booking_id):
         try:
             scores = {}
             for rubric in exam.rubrics:
-                val = request.form.get(f"rubric_{rubric.id}", 0)
-                scores[rubric.id] = float(val)
+                raw_val = request.form.get(f"rubric_{rubric.id}")
+                if raw_val is not None and str(raw_val).strip() != '':
+                    scores[rubric.id] = float(raw_val)
 
             remarks = request.form.get('remarks', '')
             action = request.form.get('action', 'draft')

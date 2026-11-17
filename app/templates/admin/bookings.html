@@ -103,6 +103,7 @@
                   <i class="bi bi-arrow-left-right me-1"></i> Reschedule
                 </a>
                 <form method="POST" action="{{ url_for('admin.cancel_booking', booking_id=b.id) }}" class="d-inline" onsubmit="return confirm('Cancel this student booking?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-danger" title="Cancel Booking">
                     <i class="bi bi-x-circle"></i>
                   </button>
@@ -112,12 +113,14 @@
               {% if b.evaluation %}
                 {% if not b.evaluation.is_published %}
                   <form method="POST" action="{{ url_for('admin.publish_evaluation', eval_id=b.evaluation.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-success" title="Publish Results">
                       <i class="bi bi-eye"></i> Publish
                     </button>
                   </form>
                 {% else %}
                   <form method="POST" action="{{ url_for('admin.unpublish_evaluation', eval_id=b.evaluation.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-warning" title="Unpublish Results">
                       <i class="bi bi-eye-slash"></i> Withhold
                     </button>

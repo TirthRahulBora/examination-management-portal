@@ -75,12 +75,14 @@
                 <i class="bi bi-pencil"></i>
               </a>
               <form method="POST" action="{{ url_for('admin.toggle_course_status', course_id=course.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-outline-warning" title="Toggle Status">
                   <i class="bi bi-arrow-repeat"></i>
                 </button>
               </form>
               {% if course.examinations.count() == 0 %}
               <form method="POST" action="{{ url_for('admin.delete_course', course_id=course.id) }}" class="d-inline" onsubmit="return confirm('Delete this course permanently?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-outline-danger" title="Delete Course">
                   <i class="bi bi-trash"></i>
                 </button>

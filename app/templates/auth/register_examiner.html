@@ -20,6 +20,7 @@
         </div>
 
         <form method="POST" action="{{ url_for('auth.register_examiner') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-3">
             <label for="full_name" class="form-label small fw-semibold">Full Name (with Title) *</label>
             <input type="text" class="form-control" id="full_name" name="full_name" placeholder="Dr. Jane Doe" required autofocus>

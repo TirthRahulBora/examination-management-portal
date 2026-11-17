@@ -10,6 +10,7 @@
       </div>
       <div class="card-body p-4">
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-3">
             <label for="course_code" class="form-label small fw-semibold">Course Code *</label>
             <input type="text" class="form-control" id="course_code" name="course_code" value="{{ course.course_code if course else '' }}" placeholder="e.g. CS101, DS201" required autofocus>

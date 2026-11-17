@@ -190,9 +190,10 @@ erDiagram
 | **Admin** | `/admin/students` | GET, POST | Admin | Student directory inspection and account status toggling |
 | **Admin** | `/admin/bookings` | GET | Admin | Search bookings by student/examiner/exam ID or name |
 | **Admin** | `/admin/bookings/<id>/reschedule` | GET, POST | Admin | Atomically moves student to another slot in same exam |
-| **Admin** | `/admin/slots/<id>/reassign` | POST | Admin | Reallocates slot examiner with audit preservation |
+| **Admin** | `/admin/slots/<id>/reassign` | POST | Admin | Reallocates slot examiner with schedule conflict validation |
 | **Examiner** | `/examiner/dashboard` | GET | Examiner | Examiner metrics, assigned modules, grading queue |
-| **Examiner** | `/examiner/slots/new` | GET, POST | Examiner | Authors slot with date, time, capacity (within window) |
+| **Examiner** | `/examiner/examinations/<int:exam_id>/slots/new` | GET, POST | Examiner | Authors slot with date, time, capacity (within window) |
+| **Examiner** | `/examiner/slots/<int:slot_id>/edit` | GET, POST | Examiner | Updates slot before booking window with capacity & overlap checks |
 | **Examiner** | `/examiner/slots/<id>/students` | GET | Examiner | Inspects booked candidates and contact details |
 | **Examiner** | `/examiner/bookings/<id>/evaluate` | GET, POST | Examiner | Multi-criteria rubric evaluation and mark publication |
 | **Student** | `/student/dashboard` | GET | Student | Upcoming examination schedule, open tests, score summaries |
@@ -205,51 +206,61 @@ erDiagram
 
 ### 7. Critical Business Logic Implementation
 
-1. **Transactional Slot Capacity Enforcement:**  
-   When a student requests a seat, `BookingService.book_slot` validates that `slot.available_seats > 0` and atomically decrements `available_seats`. If capacity reaches zero, the slot automatically transitions to `'Full'`. Overbooking is rendered mathematically impossible.
+1. **Transactional Slot Capacity Enforcement & SQLite Concurrency:**  
+   Concurrency control in SQLite is enforced through transactional serialization (`BEGIN IMMEDIATE` write transactions) combined with database-level atomic conditional updates (`available_seats = available_seats - 1 WHERE id = :id AND available_seats > 0`) and SQLite partial unique indexing (`uq_active_student_exam_booking`). When capacity reaches zero, the slot automatically transitions to `'Full'`. Overbooking and duplicate registrations are impossible under simultaneous requests.
 2. **Duplicate Active Booking Elimination:**  
-   Students cannot book multiple slots for the same examination. This is validated in `BookingService` and guarded at the database level using a partial unique index on `(student_id, examination_id) WHERE status = 'Booked'`.
+   Students cannot book multiple slots for the same examination. This is validated at the service layer and guarded at the database level using a partial unique index on `(student_id, examination_id) WHERE status = 'Booked'`.
 3. **Capacity Restoration with Audit History:**  
-   When a student cancels before the configured booking deadline, the booking status transitions to `'Cancelled'` (preserving institutional history), and the associated slot's `available_seats` is incremented.
+   When a student cancels before the configured booking deadline, the booking status transitions to `'Cancelled'` (preserving institutional audit history), and the associated slot's `available_seats` is incremented.
 4. **Timeline Synchronization Engine:**  
-   Examiners can author slots only while `slot_creation_start <= now <= slot_creation_end`. Students can book only while `slot_booking_start <= now <= slot_booking_end`.
-5. **Standardized Rubric Defense:**  
-   Evaluators must input scores bounded by each criterion's maximum marks. Total marks cannot exceed the examination ceiling. Results remain restricted until marked `'Published'`.
+   Examiners can author and update slots strictly while `slot_creation_start <= now <= slot_creation_end` and prior to `slot_booking_start`. Students can book only while `slot_booking_start <= now <= slot_booking_end`. Cancellation is rejected once the booking window deadline has arrived (`now >= slot_booking_end`).
+5. **Examiner Reassignment with Schedule Overlap Prevention:**  
+   Administrators can reallocate slots to different approved examiners; the system strictly validates that the recipient faculty member has no overlapping commitments on that date and time before completing the reassignment.
+6. **Mandatory Rubric Completeness:**  
+   `EvaluationService.submit_evaluation` requires marks for every single configured rubric criterion associated with the examination. Evaluations with omitted or partial criteria are rejected. Total marks cannot exceed the examination ceiling.
+7. **Cross-Site Request Forgery (CSRF) Defense:**  
+   State-changing POST, PUT, and DELETE operations across all user roles require a cryptographically verified CSRF token generated via `secrets.token_hex(32)` and validated using constant-time string comparison (`hmac.compare_digest`). Debug mode is disabled by default.
 
 ---
 
 ### 8. Quality Assurance & Pytest Verification
 
-A test suite containing **20 automated test cases** was implemented in `tests/` using `pytest`. All tests execute against an in-memory SQLite database utilizing SQLAlchemy's `StaticPool` for concurrency isolation.
+A test suite containing **26 automated test cases** was implemented in `tests/` using `pytest`. All tests execute against an in-memory SQLite database utilizing SQLAlchemy's `StaticPool` for concurrency isolation within the project virtual environment (`pip install -r requirements.txt`).
 
 ```
 ================================ test session starts =================================
 platform win32 -- Python 3.13.12, pytest-9.2.0, pluggy-1.7.0
 rootdir: D:\Dev_Projects\IITM Tools in DS\examination-management-portal
-collected 20 items
+collected 26 items
 
-tests/test_admin.py::test_course_crud PASSED                                   [  5%]
-tests/test_admin.py::test_examination_management PASSED                        [ 10%]
-tests/test_admin.py::test_rubric_management PASSED                             [ 15%]
-tests/test_admin.py::test_examiner_deactivation_and_reassignment PASSED        [ 20%]
-tests/test_auth.py::test_admin_login PASSED                                    [ 25%]
-tests/test_auth.py::test_student_registration_and_login PASSED                 [ 30%]
-tests/test_auth.py::test_examiner_registration_and_pending_approval PASSED       [ 35%]
-tests/test_auth.py::test_examiner_approval_workflow PASSED                     [ 40%]
-tests/test_auth.py::test_role_based_access_restrictions PASSED                 [ 45%]
-tests/test_booking.py::test_overbooking_prevention PASSED                      [ 50%]
-tests/test_booking.py::test_duplicate_booking_prevention PASSED                [ 55%]
-tests/test_booking.py::test_booking_deadline_enforcement PASSED                [ 60%]
-tests/test_booking.py::test_slot_creation_deadline_enforcement PASSED          [ 65%]
-tests/test_booking.py::test_admin_rescheduling PASSED                          [ 70%]
-tests/test_examiner.py::test_slot_creation_and_conflict_detection PASSED       [ 75%]
-tests/test_examiner.py::test_rubric_evaluation_submission PASSED               [ 80%]
-tests/test_examiner.py::test_unauthorized_examiner_evaluation_guard PASSED       [ 85%]
-tests/test_student.py::test_student_browse_and_book_slot PASSED                [ 90%]
-tests/test_student.py::test_student_booking_cancellation PASSED                [ 95%]
+tests/test_admin.py::test_course_crud PASSED                                   [  4%]
+tests/test_admin.py::test_examination_management PASSED                        [  8%]
+tests/test_admin.py::test_rubric_management PASSED                             [ 12%]
+tests/test_admin.py::test_examiner_deactivation_and_reassignment PASSED        [ 15%]
+tests/test_admin.py::test_examiner_reassignment_conflict_prevention PASSED     [ 19%]
+tests/test_auth.py::test_admin_login PASSED                                    [ 23%]
+tests/test_auth.py::test_student_registration_and_login PASSED                 [ 27%]
+tests/test_auth.py::test_examiner_registration_and_pending_approval PASSED       [ 31%]
+tests/test_auth.py::test_examiner_approval_workflow PASSED                     [ 35%]
+tests/test_auth.py::test_role_based_access_restrictions PASSED                 [ 38%]
+tests/test_auth.py::test_csrf_token_validation PASSED                          [ 42%]
+tests/test_booking.py::test_overbooking_prevention PASSED                      [ 46%]
+tests/test_booking.py::test_duplicate_booking_prevention PASSED                [ 50%]
+tests/test_booking.py::test_booking_deadline_enforcement PASSED                [ 54%]
+tests/test_booking.py::test_slot_creation_deadline_enforcement PASSED          [ 58%]
+tests/test_booking.py::test_admin_rescheduling PASSED                          [ 62%]
+tests/test_booking.py::test_cancellation_deadline_boundary_enforcement PASSED [ 65%]
+tests/test_examiner.py::test_slot_creation_and_conflict_detection PASSED       [ 69%]
+tests/test_examiner.py::test_rubric_evaluation_submission PASSED               [ 73%]
+tests/test_examiner.py::test_unauthorized_examiner_evaluation_guard PASSED       [ 77%]
+tests/test_examiner.py::test_examiner_edit_slot_before_booking PASSED         [ 81%]
+tests/test_examiner.py::test_slot_editing_creation_window_enforcement PASSED  [ 85%]
+tests/test_examiner.py::test_evaluation_incomplete_rubric_rejection PASSED    [ 88%]
+tests/test_student.py::test_student_browse_and_book_slot PASSED                [ 92%]
+tests/test_student.py::test_student_booking_cancellation PASSED                [ 96%]
 tests/test_student.py::test_result_publication_visibility PASSED               [100%]
 
-============================= 20 passed in 18.06s =============================
+============================= 26 passed in 21.02s =============================
 ```
 
 ---

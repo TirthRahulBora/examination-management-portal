@@ -75,23 +75,27 @@
             <div class="btn-group btn-group-sm">
               {% if examiner.status == 'pending' %}
                 <form method="POST" action="{{ url_for('admin.approve_examiner', user_id=examiner.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-success" title="Approve Examiner">
                     <i class="bi bi-check-lg me-1"></i> Approve
                   </button>
                 </form>
                 <form method="POST" action="{{ url_for('admin.reject_examiner', user_id=examiner.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-danger" title="Reject Application">
                     <i class="bi bi-x-lg me-1"></i> Reject
                   </button>
                 </form>
               {% elif examiner.status == 'approved' %}
                 <form method="POST" action="{{ url_for('admin.deactivate_examiner', user_id=examiner.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-danger" title="Deactivate">
                     <i class="bi bi-pause-circle me-1"></i> Deactivate
                   </button>
                 </form>
               {% elif examiner.status in ['deactivated', 'rejected'] %}
                 <form method="POST" action="{{ url_for('admin.activate_examiner', user_id=examiner.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-success" title="Reactivate">
                     <i class="bi bi-play-circle me-1"></i> Activate
                   </button>

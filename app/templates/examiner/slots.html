@@ -59,6 +59,7 @@
                   <i class="bi bi-pencil"></i>
                 </a>
                 <form method="POST" action="{{ url_for('examiner.delete_slot', slot_id=slot.id) }}" class="d-inline" onsubmit="return confirm('Delete this examination slot?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-danger" title="Delete Slot">
                     <i class="bi bi-trash"></i>
                   </button>

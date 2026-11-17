@@ -62,6 +62,8 @@ class BookingService:
 
         exam = slot.examination
         now = datetime.utcnow()
+        if not exam.is_in_slot_creation_period(now):
+            raise ValueError(f"Slot creation window is not currently active. Window: {exam.slot_creation_start.strftime('%Y-%m-%d %H:%M')} to {exam.slot_creation_end.strftime('%Y-%m-%d %H:%M')}.")
         if now >= exam.slot_booking_start:
             raise ValueError("Slots cannot be modified once the booking window has opened.")
 
@@ -175,7 +177,7 @@ class BookingService:
                 raise PermissionError("Unauthorized cancellation attempt.")
             # Student can cancel only before the booking deadline
             now = datetime.utcnow()
-            if now > booking.examination.slot_booking_end:
+            if now >= booking.examination.slot_booking_end:
                 raise ValueError("Cancellation deadline has passed for this examination.")
 
         slot = db.session.query(ExaminationSlot).filter_by(id=booking.slot_id).with_for_update().first()
@@ -242,6 +244,18 @@ class BookingService:
         new_examiner = User.query.filter_by(id=new_examiner_id, role='examiner', status='approved').first()
         if not new_examiner:
             raise ValueError("Selected examiner is not an approved active examiner.")
+
+        # Check for schedule conflicts for the new examiner
+        conflict = ExaminationSlot.query.filter(
+            ExaminationSlot.examiner_id == new_examiner.id,
+            ExaminationSlot.examination_date == slot.examination_date,
+            ExaminationSlot.id != slot.id,
+            ExaminationSlot.status != 'Cancelled',
+            ExaminationSlot.start_time < slot.end_time,
+            ExaminationSlot.end_time > slot.start_time
+        ).first()
+        if conflict:
+            raise ValueError(f"Schedule conflict: Examiner {new_examiner.full_name} already has an active slot on {slot.examination_date} from {conflict.start_time.strftime('%H:%M')} to {conflict.end_time.strftime('%H:%M')}.")
 
         # Ensure examiner is associated with examination
         if new_examiner not in slot.examination.assigned_examiners:

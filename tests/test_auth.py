@@ -104,3 +104,17 @@ def test_role_based_access_restrictions(client, student_user, examiner_approved)
     # Examiner cannot access admin dashboard
     admin_res2 = client.get('/admin/dashboard')
     assert admin_res2.status_code in [403, 302]
+
+def test_csrf_token_validation(app):
+    # Temporarily enable CSRF protection to verify rejection of untokenized POST requests
+    app.config['WTF_CSRF_ENABLED'] = True
+    app.config['TESTING'] = False
+    try:
+        with app.test_client() as c:
+            # POST without CSRF token must return 400 Bad Request
+            res = c.post('/auth/login', data={'email': 'any@test.edu', 'password': 'Pass'})
+            assert res.status_code == 400
+            assert b'CSRF validation failed' in res.data
+    finally:
+        app.config['WTF_CSRF_ENABLED'] = False
+        app.config['TESTING'] = True

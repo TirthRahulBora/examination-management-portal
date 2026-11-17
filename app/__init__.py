@@ -1,3 +1,5 @@
+import secrets
+import hmac
 import os
 from pathlib import Path
 from datetime import datetime
@@ -5,6 +7,13 @@ from flask import Flask, redirect, url_for, render_template
 from flask_login import current_user
 from app.extensions import db, login_manager
 from config import config_by_name
+
+def generate_csrf_token():
+    from flask import session
+    if '_csrf_token' not in session:
+        session['_csrf_token'] = secrets.token_hex(32)
+    return session['_csrf_token']
+
 
 def create_app(config_name=None):
     if config_name is None:
@@ -87,7 +96,8 @@ def create_app(config_name=None):
     def inject_globals():
         return {
             'current_year': datetime.utcnow().year,
-            'app_title': 'Examination Management Portal'
+            'app_title': 'Examination Management Portal',
+            'csrf_token': generate_csrf_token
         }
 
     # Error handlers
@@ -107,5 +117,17 @@ def create_app(config_name=None):
     def internal_error(error):
         db.session.rollback()
         return render_template('errors/500.html', error=error), 500
+
+    
+    @app.before_request
+    def check_csrf_protection():
+        if app.config.get('TESTING') or not app.config.get('WTF_CSRF_ENABLED', True):
+            return
+        from flask import request, abort, session
+        if request.method in ('POST', 'PUT', 'DELETE', 'PATCH'):
+            token = request.form.get('csrf_token') or request.headers.get('X-CSRFToken')
+            expected_token = session.get('_csrf_token')
+            if not expected_token or not token or not hmac.compare_digest(str(token), str(expected_token)):
+                abort(400, description="CSRF validation failed: missing or invalid security token. Please refresh and try again.")
 
     return app

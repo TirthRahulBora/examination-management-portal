@@ -186,3 +186,50 @@ def test_admin_rescheduling(app, admin_user, examiner_approved, sample_exam):
     dst = db.session.get(ExaminationSlot, slot_dst.id)
     assert dst.available_seats == 1
     assert dst.status == 'Available'
+
+def test_cancellation_deadline_boundary_enforcement(app, examiner_approved, sample_course):
+    now = datetime.utcnow()
+    # Exam where booking window has closed
+    exam = Examination(
+        course_id=sample_course.id,
+        examination_name='Deadline Past Exam',
+        examination_type='Viva',
+        duration=30,
+        maximum_marks=50.0,
+        slot_creation_start=now - timedelta(days=10),
+        slot_creation_end=now - timedelta(days=5),
+        slot_booking_start=now - timedelta(days=5),
+        slot_booking_end=now - timedelta(minutes=5),  # Booking deadline has just passed!
+        status='Closed'
+    )
+    exam.assigned_examiners = [examiner_approved]
+    db.session.add(exam)
+    db.session.flush()
+
+    slot = ExaminationSlot(
+        examination_id=exam.id,
+        examiner_id=examiner_approved.id,
+        examination_date=date.today() + timedelta(days=1),
+        start_time=time(10, 0),
+        end_time=time(10, 30),
+        maximum_capacity=2,
+        available_seats=1,
+        status='Available'
+    )
+    student = User(full_name='Cancel Student', email='cancel_bound@test.edu', role='student', status='active')
+    student.set_password('Pass123')
+    db.session.add_all([slot, student])
+    db.session.flush()
+
+    booking = Booking(
+        student_id=student.id,
+        slot_id=slot.id,
+        examination_id=exam.id,
+        status='Booked'
+    )
+    db.session.add(booking)
+    db.session.commit()
+
+    # Attempting to cancel after/at booking deadline must be rejected
+    with pytest.raises(ValueError, match="Cancellation deadline has passed"):
+        BookingService.cancel_booking(booking_id=booking.id, user=student)

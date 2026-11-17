@@ -33,6 +33,7 @@
 
         {% if available_slots %}
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-4">
             <label for="target_slot_id" class="form-label small fw-semibold">Select Destination Slot (Same Examination) *</label>
             <div class="list-group">

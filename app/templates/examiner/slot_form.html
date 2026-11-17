@@ -18,6 +18,7 @@
         </div>
 
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <div class="mb-3">
             <label for="examination_date" class="form-label small fw-semibold">Examination Date *</label>
             <input type="date" class="form-control" id="examination_date" name="examination_date" value="{{ slot.examination_date.isoformat() if slot else '' }}" required autofocus>

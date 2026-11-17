@@ -61,6 +61,7 @@
             {% if b.status == 'Booked' %}
               {% if now <= b.examination.slot_booking_end %}
                 <form method="POST" action="{{ url_for('student.cancel_booking', booking_id=b.id) }}" class="d-inline" onsubmit="return confirm('Confirm cancellation of this slot reservation? Seat will be returned to the available pool.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <button type="submit" class="btn btn-outline-danger btn-sm">
                     <i class="bi bi-x-circle me-1"></i> Cancel Booking
                   </button>

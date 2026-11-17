@@ -176,3 +176,81 @@ def test_examiner_edit_slot_before_booking(client, app, examiner_approved, sampl
     updated_slot = db.session.get(ExaminationSlot, slot.id)
     assert updated_slot.start_time == time(11, 30)
     assert updated_slot.maximum_capacity == 3
+
+def test_slot_editing_creation_window_enforcement(client, app, examiner_approved, sample_course):
+    client.post('/auth/login', data={'email': 'examiner@test.edu', 'password': 'ExaminerPass123'})
+
+    now = datetime.utcnow()
+    # Examination where slot creation period has ended, but booking has not yet started
+    exam = Examination(
+        course_id=sample_course.id,
+        examination_name='Expired Creation Window Exam',
+        examination_type='Viva',
+        duration=30,
+        maximum_marks=100.0,
+        slot_creation_start=now - timedelta(days=5),
+        slot_creation_end=now - timedelta(days=1),
+        slot_booking_start=now + timedelta(days=2),
+        slot_booking_end=now + timedelta(days=10),
+        status='Draft'
+    )
+    exam.assigned_examiners = [examiner_approved]
+    db.session.add(exam)
+    db.session.flush()
+
+    slot = ExaminationSlot(
+        examination_id=exam.id,
+        examiner_id=examiner_approved.id,
+        examination_date=date.today() + timedelta(days=3),
+        start_time=time(14, 0),
+        end_time=time(14, 30),
+        maximum_capacity=2,
+        available_seats=2,
+        status='Available'
+    )
+    db.session.add(slot)
+    db.session.commit()
+
+    # Attempt to edit slot when slot creation window has closed
+    edit_res = client.post(f'/examiner/slots/{slot.id}/edit', data={
+        'examination_date': (date.today() + timedelta(days=3)).strftime('%Y-%m-%d'),
+        'start_time': '14:30',
+        'end_time': '15:00',
+        'maximum_capacity': 2
+    }, follow_redirects=True)
+    assert b'Slot creation window is not currently active' in edit_res.data
+
+def test_evaluation_incomplete_rubric_rejection(client, app, examiner_approved, student_user, sample_exam):
+    client.post('/auth/login', data={'email': 'examiner@test.edu', 'password': 'ExaminerPass123'})
+
+    slot = ExaminationSlot(
+        examination_id=sample_exam.id,
+        examiner_id=examiner_approved.id,
+        examination_date=date.today() + timedelta(days=2),
+        start_time=time(15, 0),
+        end_time=time(15, 30),
+        maximum_capacity=1,
+        available_seats=0,
+        status='Full'
+    )
+    db.session.add(slot)
+    db.session.flush()
+
+    booking = Booking(
+        student_id=student_user.id,
+        slot_id=slot.id,
+        examination_id=sample_exam.id,
+        status='Booked'
+    )
+    db.session.add(booking)
+    db.session.commit()
+
+    rubrics = sample_exam.rubrics
+    assert len(rubrics) >= 2
+    # Submit marks for ONLY ONE rubric when two are required
+    res = client.post(f'/examiner/bookings/{booking.id}/evaluate', data={
+        f'rubric_{rubrics[0].id}': 35,
+        'remarks': 'Omitted second criterion'
+    }, follow_redirects=True)
+    assert b'missing scores for required criteria' in res.data
+    assert booking.evaluation is None

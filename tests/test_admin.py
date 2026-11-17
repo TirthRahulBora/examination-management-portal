@@ -124,3 +124,51 @@ def test_examiner_deactivation_and_reassignment(client, app, admin_user, examine
     s = ExaminationSlot.query.get(slot_id)
     assert s.examiner_id == ex2_id
 
+def test_examiner_reassignment_conflict_prevention(client, app, admin_user, examiner_approved, sample_exam):
+    client.post('/auth/login', data={'email': 'admin@test.edu', 'password': 'AdminPass123'})
+
+    # Create second approved examiner
+    ex2 = User(
+        full_name='Dr. Conflict Test',
+        email='conflict@test.edu',
+        role='examiner',
+        department='Computer Science',
+        status='approved'
+    )
+    ex2.set_password('Pass123')
+    db.session.add(ex2)
+    db.session.flush()
+
+    # Create slot 1 for examiner_approved (10:00 - 10:30)
+    slot1 = ExaminationSlot(
+        examination_id=sample_exam.id,
+        examiner_id=examiner_approved.id,
+        examination_date=date.today() + timedelta(days=2),
+        start_time=time(10, 0),
+        end_time=time(10, 30),
+        maximum_capacity=1,
+        available_seats=1,
+        status='Available'
+    )
+    # Create slot 2 for ex2 on the same date with overlapping time (10:15 - 10:45)
+    slot2 = ExaminationSlot(
+        examination_id=sample_exam.id,
+        examiner_id=ex2.id,
+        examination_date=date.today() + timedelta(days=2),
+        start_time=time(10, 15),
+        end_time=time(10, 45),
+        maximum_capacity=1,
+        available_seats=1,
+        status='Available'
+    )
+    db.session.add_all([slot1, slot2])
+    db.session.commit()
+
+    # Reassigning slot1 to ex2 must be rejected due to schedule conflict
+    res = client.post(f'/admin/slots/{slot1.id}/reassign', data={
+        'new_examiner_id': ex2.id
+    }, follow_redirects=True)
+    assert res.status_code == 200
+    assert b'Schedule conflict' in res.data
+    assert db.session.get(ExaminationSlot, slot1.id).examiner_id == examiner_approved.id
+

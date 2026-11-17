@@ -122,6 +122,7 @@
                 {% if not existing_booking %}
                   {% if exam.status == 'Booking Open' and exam.is_in_booking_period(now) %}
                     <form method="POST" action="{{ url_for('student.book_slot', slot_id=slot.id) }}" class="d-inline" onsubmit="return confirm('Confirm booking this examination slot?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                       <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-bookmark-check me-1"></i> Book Slot
                       </button>

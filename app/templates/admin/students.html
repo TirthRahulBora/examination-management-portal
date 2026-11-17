@@ -71,6 +71,7 @@
           </td>
           <td class="text-end">
             <form method="POST" action="{{ url_for('admin.toggle_student_status', user_id=s.id) }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button type="submit" class="btn btn-sm {% if s.status == 'active' %}btn-outline-danger{% else %}btn-outline-success{% endif %}" title="Toggle Student Access">
                 {% if s.status == 'active' %}
                   <i class="bi bi-person-x me-1"></i> Deactivate

@@ -31,6 +31,14 @@ class EvaluationService:
         if not valid_rubrics:
             raise ValueError("No rubrics configured for this examination. Evaluation cannot proceed.")
 
+        # Verify all configured examination rubrics are scored
+        submitted_ids = {int(k) for k in rubric_scores.keys()}
+        required_ids = set(valid_rubrics.keys())
+        missing_ids = required_ids - submitted_ids
+        if missing_ids:
+            missing_names = [valid_rubrics[rid].criterion_name for rid in missing_ids]
+            raise ValueError(f"Incomplete evaluation: missing scores for required criteria: {', '.join(missing_names)}.")
+
         total_marks = 0.0
         validated_details = []
 
