@@ -79,7 +79,7 @@
           </td>
           <td>
             <div class="small fw-semibold">{{ b.slot.examiner.full_name }}</div>
-            <div class="small text-muted" style="font-size: 0.75rem;">ID: #{{ b.slot.examiner.id }}</div>
+            <div class="small text-muted">ID: #{{ b.slot.examiner.id }}</div>
           </td>
           <td>
             <span class="badge-status {% if b.status == 'Booked' %}badge-booking-open{% elif b.status == 'Completed' %}badge-completed{% else %}badge-cancelled{% endif %}">

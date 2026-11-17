@@ -113,7 +113,7 @@
               <td>{{ slot.start_time | format_time }} – {{ slot.end_time | format_time }}</td>
               <td>
                 <div class="small fw-semibold">{{ slot.examiner.full_name }}</div>
-                <div class="small text-muted" style="font-size: 0.75rem;">{{ slot.examiner.department or 'Academic' }}</div>
+                <div class="small text-muted">{{ slot.examiner.department or 'Academic' }}</div>
               </td>
               <td>
                 <span class="badge bg-success rounded-pill px-2 py-1">{{ slot.available_seats }} free</span>

@@ -134,7 +134,7 @@
                 {% if examiner in exam.assigned_examiners %}checked{% endif %}>
               <div class="flex-grow-1">
                 <div class="fw-semibold small">{{ examiner.full_name }}</div>
-                <div class="text-muted" style="font-size: 0.75rem;">{{ examiner.department or 'Academic Division' }} &bull; {{ examiner.email }}</div>
+                <div class="text-muted">{{ examiner.department or 'Academic Division' }} &bull; {{ examiner.email }}</div>
               </div>
             </label>
             {% else %}

@@ -36,7 +36,7 @@
           <td class="small">{{ ev.evaluation_date | format_date }}</td>
           <td>
             <div class="small fw-semibold">{{ ev.examiner.full_name }}</div>
-            <div class="small text-muted" style="font-size: 0.75rem;">{{ ev.examiner.department or 'Academic' }}</div>
+            <div class="small text-muted">{{ ev.examiner.department or 'Academic' }}</div>
           </td>
           <td>
             <div class="fw-bold fs-6 text-success">{{ ev.total_marks }} / {{ ev.booking.examination.maximum_marks }}</div>

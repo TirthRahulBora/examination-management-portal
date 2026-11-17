@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% from '_macros.html' import stat_card %}
 {% block title %}Administrator Dashboard{% endblock %}
 
 {% block content %}
@@ -31,84 +32,19 @@
 </div>
 {% endif %}
 
-<!-- Key Metrics Grid -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-md-4 col-xl-2">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Courses</div>
-        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
-          <i class="bi bi-journal-bookmark"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ total_courses }}</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-md-4 col-xl-2">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Examinations</div>
-        <div class="stat-icon bg-info bg-opacity-10 text-info">
-          <i class="bi bi-card-checklist"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ total_examinations }}</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-md-4 col-xl-2">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Examiners</div>
-        <div class="stat-icon bg-success bg-opacity-10 text-success">
-          <i class="bi bi-person-badge"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ total_examiners }}</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-md-4 col-xl-2">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Students</div>
-        <div class="stat-icon bg-indigo bg-opacity-10 text-primary">
-          <i class="bi bi-people"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ total_students }}</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-md-4 col-xl-2">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Total Slots</div>
-        <div class="stat-icon bg-warning bg-opacity-10 text-warning">
-          <i class="bi bi-clock-history"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ total_slots }}</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-md-4 col-xl-2">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Bookings</div>
-        <div class="stat-icon bg-danger bg-opacity-10 text-danger">
-          <i class="bi bi-calendar2-check"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ total_bookings }}</div>
-    </div>
-  </div>
+<!-- Key Metrics (auto-fit grid, linked) -->
+<div class="stat-grid">
+  {{ stat_card('Courses', total_courses, 'journal-bookmark', 'primary', url_for('admin.courses')) }}
+  {{ stat_card('Examinations', total_examinations, 'card-checklist', 'info', url_for('admin.examinations')) }}
+  {{ stat_card('Examiners', total_examiners, 'person-badge', 'success', url_for('admin.examiners')) }}
+  {{ stat_card('Students', total_students, 'people', 'purple', url_for('admin.students')) }}
+  {{ stat_card('Total Slots', total_slots, 'clock-history', 'warning', url_for('admin.bookings')) }}
+  {{ stat_card('Bookings', total_bookings, 'calendar2-check', 'danger', url_for('admin.bookings')) }}
 </div>
 
-<div class="row g-4">
+<div class="split split-2-1">
   <!-- Recent Bookings Table -->
-  <div class="col-lg-8">
+  <div>
     <div class="card card-academic h-100">
       <div class="card-header-academic d-flex justify-content-between align-items-center">
         <span class="fw-bold"><i class="bi bi-clock-history me-1 text-primary"></i> Recent Student Bookings</span>
@@ -169,7 +105,7 @@
   </div>
 
   <!-- Examinations Quick List -->
-  <div class="col-lg-4">
+  <div>
     <div class="card card-academic h-100">
       <div class="card-header-academic d-flex justify-content-between align-items-center">
         <span class="fw-bold"><i class="bi bi-card-checklist me-1 text-primary"></i> Active Examinations</span>

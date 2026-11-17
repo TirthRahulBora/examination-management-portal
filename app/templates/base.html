@@ -12,15 +12,16 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block extra_css %}{% endblock %}
 </head>
-<body>
+<body class="{% if current_user.is_authenticated %}has-sidebar{% else %}no-sidebar{% endif %}">
+  <a class="skip-link" href="#main">Skip to content</a>
 
   <!-- Top Navigation Bar -->
-  <nav class="navbar navbar-expand-lg navbar-academic sticky-top shadow-xs">
-    <div class="container-fluid px-3">
+  <nav class="navbar navbar-academic sticky-top">
+    <div class="container-fluid px-3 flex-nowrap">
       <div class="d-flex align-items-center gap-2">
         {% if current_user.is_authenticated %}
-        <button id="sidebarToggle" class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center border-0 p-1 me-1" type="button" title="Toggle Navigation Sidebar (Ctrl+[)" style="width: 36px; height: 36px;">
-          <i class="bi bi-layout-sidebar-inset fs-5 text-secondary"></i>
+        <button id="sidebarToggle" class="icon-btn" type="button" aria-label="Toggle navigation" aria-controls="sidebar" title="Toggle Navigation Sidebar (Ctrl+[)">
+          <i class="bi bi-list fs-4"></i>
         </button>
         {% endif %}
         <a class="navbar-brand d-flex align-items-center gap-2 m-0" href="{{ url_for('index') }}">
@@ -30,12 +31,12 @@
         </a>
       </div>
 
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2 gap-sm-3 min-w-0">
         {% if current_user.is_authenticated %}
-          <div class="d-flex align-items-center gap-2">
-            <div class="text-end d-none d-md-block">
-              <div class="fw-bold small text-dark">{{ current_user.full_name }}</div>
-              <div class="text-muted" style="font-size: 0.75rem; text-transform: uppercase;">
+          <div class="d-flex align-items-center gap-2 min-w-0">
+            <div class="text-end d-none d-md-block user-meta">
+              <div class="fw-bold small text-dark text-truncate">{{ current_user.full_name }}</div>
+              <div class="text-muted user-sub text-truncate">
                 {{ current_user.role }} &bull; {{ current_user.department or 'Academic' }}
               </div>
             </div>
@@ -63,16 +64,16 @@
 
       <!-- Collapsible & Adjustable Sidebar -->
       <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom border-secondary border-opacity-25">
-          <span class="sidebar-title fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.08em; color: #94a3b8;">
+        <div class="sidebar-header">
+          <span class="sidebar-title">
             {% if current_user.is_admin %}Admin Operations{% elif current_user.is_examiner %}Examiner Portal{% else %}Student Portal{% endif %}
           </span>
-          <button type="button" class="btn btn-sm btn-link text-muted p-0 sidebar-collapse-btn d-none d-lg-flex align-items-center justify-content-center" id="sidebarCollapseBtn" title="Collapse / Expand Sidebar" style="width: 24px; height: 24px;">
+          <button type="button" class="sidebar-collapse-btn d-none d-lg-flex" id="sidebarCollapseBtn" title="Collapse / Expand Sidebar" aria-label="Collapse sidebar">
             <i class="bi bi-chevron-double-left"></i>
           </button>
         </div>
 
-        <ul class="nav flex-column">
+        <ul class="nav flex-column sidebar-nav">
           {% if current_user.is_admin %}
             <li class="nav-item">
               <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}" data-tooltip-text="Dashboard">
@@ -173,8 +174,10 @@
       </aside>
     {% endif %}
 
-    <!-- Main Content Area -->
-    <main class="main-content">
+    <!-- Main Column (content + footer) -->
+    <div class="main-col">
+    <main class="main-content" id="main">
+      <div class="page-container">
       <!-- Flash Alert Notifications -->
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
@@ -200,15 +203,14 @@
 
       <!-- Primary Page Content -->
       {% block content %}{% endblock %}
+      </div>
     </main>
-  </div>
 
-  <!-- Footer -->
-  <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
-    <div class="container-fluid px-4">
-      &copy; {{ current_year }} Examination Management Portal (EMP) &bull; Indian Institute of Technology Madras Project Implementation
+    <footer class="app-footer">
+      &copy; {{ current_year }} Examination Management Portal (EMP) &bull; IIT Madras Project Implementation
+    </footer>
     </div>
-  </footer>
+  </div>
 
   <!-- Bootstrap 5 Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

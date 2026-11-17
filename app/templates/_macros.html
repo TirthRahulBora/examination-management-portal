@@ -1,0 +1,24 @@
+{# Reusable UI building blocks — import with:  {% from '_macros.html' import stat_card, page_header %} #}
+
+{% macro stat_card(label, value, icon, tone='primary', href=None, hint=None) -%}
+{% set tag = 'a' if href else 'div' %}
+<{{ tag }} class="stat-card tone-{{ tone }}" {% if href %}href="{{ href }}"{% endif %}>
+  <div class="stat-top">
+    <span class="stat-label">{{ label }}</span>
+    <span class="stat-icon"><i class="bi bi-{{ icon }}"></i></span>
+  </div>
+  <div class="stat-number">{{ value }}</div>
+  <div class="stat-foot">
+    <span class="stat-hint">{{ hint or '' }}</span>
+    {% if href %}<i class="bi bi-arrow-right-short stat-arrow"></i>{% endif %}
+  </div>
+</{{ tag }}>
+{%- endmacro %}
+
+{% macro empty_state(icon, title, text='') -%}
+<div class="empty-state">
+  <i class="bi bi-{{ icon }} empty-state-icon"></i>
+  <div class="fw-semibold">{{ title }}</div>
+  {% if text %}<div class="small">{{ text }}</div>{% endif %}
+</div>
+{%- endmacro %}

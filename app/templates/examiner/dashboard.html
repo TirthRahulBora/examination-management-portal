@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% from '_macros.html' import stat_card %}
 {% block title %}Examiner Dashboard{% endblock %}
 
 {% block content %}
@@ -14,60 +15,17 @@
   </div>
 </div>
 
-<!-- Stat Cards -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-lg-3">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Assigned Exams</div>
-        <div class="stat-icon bg-primary bg-opacity-10 text-primary">
-          <i class="bi bi-award"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ assigned_exams | length }}</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-lg-3">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Created Slots</div>
-        <div class="stat-icon bg-info bg-opacity-10 text-info">
-          <i class="bi bi-clock-history"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ created_slots | length }}</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-lg-3">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Students Booked</div>
-        <div class="stat-icon bg-warning bg-opacity-10 text-warning">
-          <i class="bi bi-person-lines-fill"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ booked_students_count }}</div>
-    </div>
-  </div>
-
-  <div class="col-6 col-lg-3">
-    <div class="stat-card h-100">
-      <div class="d-flex justify-content-between align-items-center mb-2">
-        <div class="stat-label">Pending Grading</div>
-        <div class="stat-icon bg-danger bg-opacity-10 text-danger">
-          <i class="bi bi-clipboard-pulse"></i>
-        </div>
-      </div>
-      <div class="stat-number">{{ pending_evaluations_count }}</div>
-    </div>
-  </div>
+<!-- Key Metrics (auto-fit grid, linked) -->
+<div class="stat-grid">
+  {{ stat_card('Assigned Exams', assigned_exams | length, 'award', 'primary', url_for('examiner.examinations')) }}
+  {{ stat_card('Created Slots', created_slots | length, 'clock-history', 'info', url_for('examiner.slots')) }}
+  {{ stat_card('Students Booked', booked_students_count, 'person-lines-fill', 'warning', url_for('examiner.slots')) }}
+  {{ stat_card('Pending Grading', pending_evaluations_count, 'clipboard-pulse', 'danger', url_for('examiner.evaluations')) }}
 </div>
 
-<div class="row g-4">
+<div class="split split-7-5">
   <!-- Pending Student Evaluations -->
-  <div class="col-lg-7">
+  <div>
     <div class="card card-academic h-100">
       <div class="card-header-academic d-flex justify-content-between align-items-center">
         <span class="fw-bold"><i class="bi bi-pencil-square text-primary me-2"></i>Students Awaiting Evaluation</span>
@@ -120,7 +78,7 @@
   </div>
 
   <!-- Assigned Examinations List -->
-  <div class="col-lg-5">
+  <div>
     <div class="card card-academic h-100">
       <div class="card-header-academic d-flex justify-content-between align-items-center">
         <span class="fw-bold"><i class="bi bi-award text-primary me-2"></i>Assigned Examinations</span>
