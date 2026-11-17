@@ -15,13 +15,20 @@
 <body>
 
   <!-- Top Navigation Bar -->
-  <nav class="navbar navbar-expand-lg navbar-academic sticky-top">
+  <nav class="navbar navbar-expand-lg navbar-academic sticky-top shadow-xs">
     <div class="container-fluid px-3">
-      <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('index') }}">
-        <i class="bi bi-mortarboard-fill text-primary fs-4"></i>
-        <span class="brand-title">EMP</span>
-        <span class="brand-badge d-none d-sm-inline">IIT Madras Exam Portal</span>
-      </a>
+      <div class="d-flex align-items-center gap-2">
+        {% if current_user.is_authenticated %}
+        <button id="sidebarToggle" class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center border-0 p-1 me-1" type="button" title="Toggle Navigation Sidebar (Ctrl+[)" style="width: 36px; height: 36px;">
+          <i class="bi bi-layout-sidebar-inset fs-5 text-secondary"></i>
+        </button>
+        {% endif %}
+        <a class="navbar-brand d-flex align-items-center gap-2 m-0" href="{{ url_for('index') }}">
+          <i class="bi bi-mortarboard-fill text-primary fs-4"></i>
+          <span class="brand-title">EMP</span>
+          <span class="brand-badge d-none d-sm-inline">IIT Madras Exam Portal</span>
+        </a>
+      </div>
 
       <div class="d-flex align-items-center gap-3">
         {% if current_user.is_authenticated %}
@@ -51,90 +58,114 @@
   <!-- Layout Structure -->
   <div class="app-container">
     {% if current_user.is_authenticated %}
-      <!-- Sidebar -->
-      <aside class="sidebar">
+      <!-- Mobile Backdrop -->
+      <div id="sidebarBackdrop" class="sidebar-backdrop d-none"></div>
+
+      <!-- Collapsible & Adjustable Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header d-flex align-items-center justify-content-between pb-2 mb-2 border-bottom border-secondary border-opacity-25">
+          <span class="sidebar-title fw-bold text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.08em; color: #94a3b8;">
+            {% if current_user.is_admin %}Admin Operations{% elif current_user.is_examiner %}Examiner Portal{% else %}Student Portal{% endif %}
+          </span>
+          <button type="button" class="btn btn-sm btn-link text-muted p-0 sidebar-collapse-btn d-none d-lg-flex align-items-center justify-content-center" id="sidebarCollapseBtn" title="Collapse / Expand Sidebar" style="width: 24px; height: 24px;">
+            <i class="bi bi-chevron-double-left"></i>
+          </button>
+        </div>
+
         <ul class="nav flex-column">
           {% if current_user.is_admin %}
-            <div class="sidebar-heading">Admin Operations</div>
             <li class="nav-item">
-              <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
-                <i class="bi bi-speedometer2"></i> Dashboard
+              <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}" data-tooltip-text="Dashboard">
+                <i class="bi bi-speedometer2 nav-icon"></i>
+                <span class="nav-text">Dashboard</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if 'admin.course' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.courses') }}">
-                <i class="bi bi-journal-bookmark"></i> Courses
+              <a class="nav-link {% if 'admin.course' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.courses') }}" data-tooltip-text="Courses">
+                <i class="bi bi-journal-bookmark nav-icon"></i>
+                <span class="nav-text">Courses</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if 'admin.examination' in request.endpoint or 'admin.view_examination' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.examinations') }}">
-                <i class="bi bi-card-checklist"></i> Examinations
+              <a class="nav-link {% if 'admin.examination' in request.endpoint or 'admin.view_examination' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.examinations') }}" data-tooltip-text="Examinations">
+                <i class="bi bi-card-checklist nav-icon"></i>
+                <span class="nav-text">Examinations</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if 'admin.examiner' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.examiners') }}">
-                <i class="bi bi-person-badge"></i> Examiners
+              <a class="nav-link {% if 'admin.examiner' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.examiners') }}" data-tooltip-text="Examiners">
+                <i class="bi bi-person-badge nav-icon"></i>
+                <span class="nav-text">Examiners</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if 'admin.student' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.students') }}">
-                <i class="bi bi-people"></i> Students
+              <a class="nav-link {% if 'admin.student' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.students') }}" data-tooltip-text="Students">
+                <i class="bi bi-people nav-icon"></i>
+                <span class="nav-text">Students</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if 'admin.booking' in request.endpoint or 'reschedule' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.bookings') }}">
-                <i class="bi bi-calendar2-week"></i> Bookings & Schedule
+              <a class="nav-link {% if 'admin.booking' in request.endpoint or 'reschedule' in request.endpoint %}active{% endif %}" href="{{ url_for('admin.bookings') }}" data-tooltip-text="Bookings & Schedule">
+                <i class="bi bi-calendar2-week nav-icon"></i>
+                <span class="nav-text">Bookings & Schedule</span>
               </a>
             </li>
 
           {% elif current_user.is_examiner %}
-            <div class="sidebar-heading">Examiner Portal</div>
             <li class="nav-item">
-              <a class="nav-link {% if request.endpoint == 'examiner.dashboard' %}active{% endif %}" href="{{ url_for('examiner.dashboard') }}">
-                <i class="bi bi-speedometer2"></i> Dashboard
+              <a class="nav-link {% if request.endpoint == 'examiner.dashboard' %}active{% endif %}" href="{{ url_for('examiner.dashboard') }}" data-tooltip-text="Dashboard">
+                <i class="bi bi-speedometer2 nav-icon"></i>
+                <span class="nav-text">Dashboard</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if 'examiner.examination' in request.endpoint %}active{% endif %}" href="{{ url_for('examiner.examinations') }}">
-                <i class="bi bi-award"></i> Assigned Exams
+              <a class="nav-link {% if 'examiner.examination' in request.endpoint %}active{% endif %}" href="{{ url_for('examiner.examinations') }}" data-tooltip-text="Assigned Examinations">
+                <i class="bi bi-award nav-icon"></i>
+                <span class="nav-text">Assigned Exams</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if 'examiner.slot' in request.endpoint %}active{% endif %}" href="{{ url_for('examiner.slots') }}">
-                <i class="bi bi-clock-history"></i> My Examination Slots
+              <a class="nav-link {% if 'examiner.slot' in request.endpoint %}active{% endif %}" href="{{ url_for('examiner.slots') }}" data-tooltip-text="My Examination Slots">
+                <i class="bi bi-clock-history nav-icon"></i>
+                <span class="nav-text">My Exam Slots</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.endpoint == 'examiner.evaluations' %}active{% endif %}" href="{{ url_for('examiner.evaluations') }}">
-                <i class="bi bi-check2-circle"></i> Evaluations
+              <a class="nav-link {% if request.endpoint == 'examiner.evaluations' %}active{% endif %}" href="{{ url_for('examiner.evaluations') }}" data-tooltip-text="Evaluations">
+                <i class="bi bi-check2-circle nav-icon"></i>
+                <span class="nav-text">Evaluations</span>
               </a>
             </li>
 
           {% elif current_user.is_student %}
-            <div class="sidebar-heading">Student Portal</div>
             <li class="nav-item">
-              <a class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}" href="{{ url_for('student.dashboard') }}">
-                <i class="bi bi-speedometer2"></i> Dashboard
+              <a class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}" href="{{ url_for('student.dashboard') }}" data-tooltip-text="Dashboard">
+                <i class="bi bi-speedometer2 nav-icon"></i>
+                <span class="nav-text">Dashboard</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if 'student.examination' in request.endpoint or 'student.view_examination' in request.endpoint %}active{% endif %}" href="{{ url_for('student.examinations') }}">
-                <i class="bi bi-search"></i> Browse Exams
+              <a class="nav-link {% if 'student.examination' in request.endpoint or 'student.view_examination' in request.endpoint %}active{% endif %}" href="{{ url_for('student.examinations') }}" data-tooltip-text="Browse Examinations">
+                <i class="bi bi-search nav-icon"></i>
+                <span class="nav-text">Browse Exams</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.endpoint == 'student.bookings' %}active{% endif %}" href="{{ url_for('student.bookings') }}">
-                <i class="bi bi-calendar-check"></i> My Bookings
+              <a class="nav-link {% if request.endpoint == 'student.bookings' %}active{% endif %}" href="{{ url_for('student.bookings') }}" data-tooltip-text="My Bookings">
+                <i class="bi bi-calendar-check nav-icon"></i>
+                <span class="nav-text">My Bookings</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if 'student.result' in request.endpoint %}active{% endif %}" href="{{ url_for('student.results') }}">
-                <i class="bi bi-clipboard-data"></i> Results & Feedback
+              <a class="nav-link {% if 'student.result' in request.endpoint %}active{% endif %}" href="{{ url_for('student.results') }}" data-tooltip-text="Results & Feedback">
+                <i class="bi bi-clipboard-data nav-icon"></i>
+                <span class="nav-text">Results & Feedback</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.endpoint == 'student.profile' %}active{% endif %}" href="{{ url_for('student.profile') }}">
-                <i class="bi bi-person-circle"></i> My Profile
+              <a class="nav-link {% if request.endpoint == 'student.profile' %}active{% endif %}" href="{{ url_for('student.profile') }}" data-tooltip-text="My Profile">
+                <i class="bi bi-person-circle nav-icon"></i>
+                <span class="nav-text">My Profile</span>
               </a>
             </li>
           {% endif %}
@@ -181,6 +212,8 @@
 
   <!-- Bootstrap 5 Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Responsive Sidebar Controller -->
+  <script src="{{ url_for('static', filename='js/sidebar.js') }}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>
